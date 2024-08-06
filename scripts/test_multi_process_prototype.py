@@ -1,4 +1,4 @@
-from prototype import WallSection, WallProfile, WallBuilder
+from multi_process_prototype import WallSection, WallProfile, WallBuilder
 
 
 def test_section():
