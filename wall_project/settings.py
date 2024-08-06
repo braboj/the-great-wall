@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'wall_tracker.apps.WallTrackerConfig',
-    'myapp.apps.MyappConfig',
 ]
 
 MIDDLEWARE = [
