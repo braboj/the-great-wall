@@ -1,4 +1,4 @@
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool
 import logging
 
 # Constants
@@ -13,17 +13,20 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 class WallSection(object):
     """Represents a section of a wall."""
 
-    def __init__(self, start_height):
+    def __init__(self, start_height, full_name=''):
+        self.full_name = full_name
         self.start_height = start_height
         self.current_height = start_height
 
     def __repr__(self):
-        return (f"WallSection(start_height={self.start_height}, "
-                f"current_height={self.current_height}, "
-                f"ice={self.get_ice()}, "
-                f"cost={self.get_cost()}, "
-                f"ready={self.is_ready()}"
-                f")"
+
+        return (f'WallSection('
+                f'start_height={self.start_height}, '
+                f'current_height={self.current_height}, '
+                f'ice={self.get_ice()}, '
+                f'cost={self.get_cost()}, '
+                f'ready={self.is_ready()}'
+                f')'
                 )
 
     def is_ready(self):
@@ -49,7 +52,7 @@ class WallSection(object):
 class WallProfile(object):
     """Represents a profile of a wall."""
 
-    def __init__(self, full_name, sections):
+    def __init__(self, sections, full_name=''):
         self.full_name = full_name
         self.sections = sections
 
@@ -93,9 +96,9 @@ class WallBuilder(object):
         self.sections = []
 
     @staticmethod
-    def create_profile(heights, index):
+    def create_profile(heights, profile_id):
         sections = [WallSection(start_height) for start_height in heights]
-        return WallProfile(f"P{index + 1:02d}", sections)
+        return WallProfile(sections=sections, full_name=f"P{profile_id:02d}")
 
     def set_config(self, config_list):
         self.config_list = config_list
@@ -153,20 +156,22 @@ class WallBuilder(object):
                 for section in self.sections:
                     logging.info(section)
 
-            logging.info('-' * 80)
-            logging.info(f'TOTAL ICE : {self.get_ice()}')
-            logging.info(f'TOTAL COST: {self.get_cost()}')
-def main():
+            return self
 
+
+def main():
     config_list = [
-        [0, 0],
-        [0, 0],
-        [0, 0],
+        [0,],
+        [0,],
     ]
 
     builder = WallBuilder()
     builder.set_config(config_list)
-    builder.build(max_teams=3)
+    builder.build(max_teams=7, days=30)
+
+    logging.info('-' * 80)
+    logging.info(f'TOTAL ICE : {builder.get_ice()}')
+    logging.info(f'TOTAL COST: {builder.get_cost()}')
 
 
 if __name__ == "__main__":
