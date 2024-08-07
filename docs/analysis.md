@@ -150,13 +150,18 @@ cost: “32,233,500”
 
 ### 7. Questions
 
+> This section is only for demonstrating the questions that arise during the
+> analysis phase. The questions are not expected to be answered in the context
+> of the problem.
+
 1. The length of the wall is 300 miles, but it seems the length is not relevant
 to the problem.
 2. Are we obliged to use a database to store the wall profiles and sections?
-3. It is not clarified how to test the solution. Should we use the library 
-`unittest` as a standard library for testing?
-4. It is not mentioned how the user is to set the configuration file and the
-log file. Should we use environment variables, command-line arguments, settings
-file, REST API, or a combination of these?
-5. No performance requirements are specified. We can assume that the solution
-will not be assessed based on performance.
+3. Should we use the library `unittest` as a standard library for testing?
+4. How is the user  to set the configuration file and the
+log file? 
+5. Can we ssume that the solution will not be assessed based on some 
+   performance, e.g. response time?
+6. Should we extend the `multiprocessing.get_logger()` to log tap the messages
+from the library or focus on our custom logger?
+7. 
