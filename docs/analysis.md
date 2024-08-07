@@ -148,7 +148,21 @@ cost: “32,233,500”
 }
 ```
 
-### 7. Questions
+### 7. Acceptance Criteria
+
+- As a user, I can follow the instructions to run the solution.
+- As a user, I can pull the container from Docker Hub or GitHub and run it 
+  locally.
+- As a user, I can access the documentation to understand how to use the 
+  API.
+- As a user, I can access the cost of a specific profile using the API.
+- As a user, I can access the daily status of the wall using the API.
+- As a user, I can access the total cost of the wall using the API.
+- As a user, I can access the log files using the API.
+- As a user, I can adjust the number of crews using the API.
+
+
+### 8. Questions
 
 > This section is only for demonstrating the questions that arise during the
 > analysis phase. The questions are not expected to be answered in the context
@@ -164,4 +178,3 @@ log file?
    performance, e.g. response time?
 6. Should we extend the `multiprocessing.get_logger()` to log tap the messages
 from the library or focus on our custom logger?
-7. 
