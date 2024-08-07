@@ -15,42 +15,246 @@
 | Documentation        | GitHub Pages, MkDocs      |
 
 
-### 2. Project Requirements
+### 2. Multi-Processing
 
-### 2.1. Input
+The task definition doesn't mention any performance requirements. We will 
+concentrate on the implementation of the solution based on the task definition.
+We will use the `multiprocessing` module to simulate multiple construction crews
+working on the wall.
 
-- The solution MUST provide a configuration file containing wall profiles. 
-- The configuration file MUST contain one or more lines, each representing a 
-  wall profile.
-- Each profile MUST have one or more of sections with initial heights in feet
-- Each section MUST have an initial height between 0 and 30 feet.
-- Each section MUST be separated by a space
-- The maximum allowed amount of sections is 2000
-- The user MAY change the wall profiles at any time using the REST API 
-  (add, update, delete)
-- The user MAY switch between the multi-threaded and single-threaded 
-  construction mode using the REST API
+Processes are usesful for CPU-bound tasks, while threads are useful for 
+I/O-bound tasks. CPU-bound tasks are tasks that require a lot of computations,
+while I/O-bound tasks are tasks that require a lot of waiting for input/output
+operations (from the network, disk, database, etc.).
 
-Example (config.ini): The following configuration file contains three wall
-profiles with two sections each.
+The multiprocessing module allows us to create multiple processes that run
+in parallel. Each process will simulate a construction crew working on a
+section of the wall. We will use the `Pool` class to create a pool of worker
+processes that will work on the wall sections.
 
-```ini
-10 20
-10 5
-20 25
+The `Pool` class takes the number of worker processes as an argument. The most
+common way to create a pool of worker processes is to use the `map` method. The
+`map` method takes a function and an iterable as arguments. The function is
+applied to each element of the iterable using the worker processes in the pool.
+
+```python
+from multiprocessing import Pool
+import time
+import os
+
+
+def process_section(section):
+    print(f"Processing section {section} in process {os.getpid()}")
+    time.sleep(1)
+
+
+def main():
+    wall_profiles = [
+        [10, 20],
+        [10, 5],
+        [20, 25]
+    ]
+
+    num_processes = 2
+
+    # Get the sections
+    sections = []
+    for profile in wall_profiles:
+        sections.extend(profile)
+
+    # Do the work in parallel on the sections
+    with Pool(num_processes) as pool:
+        pool.map(process_section, sections)
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-### 2.2. Output
+Another possibility is to use the `starmap` method. The `starmap` method is
+similar to the `map` method, but it takes an iterable of iterables as an
+argument. Each inner iterable is unpacked and passed as arguments to the
+function.
 
-- The app MUST provide an endpoint to get the daily status of the wall.
-- The app MUST provide an endpoint to get an overview of the final cost of the 
-  wall
-- The app MUST provide an endpoint to get an overview of the final cost per 
-  profile
-- The app MUST store a log file that shows which thread is working on which 
-  section
-- The user may access the log files using the REST API
+```python
+from multiprocessing import Pool
+import time
+import os
 
+
+def process_section(section, day):
+    print(f"Processing section {section} on day {day} in process {os.getpid()}")
+    time.sleep(1)
+    
+
+def main():
+    
+    wall_profiles = [
+        [10, 20],
+        [10, 5],
+        [20, 25]
+    ]
+
+    num_processes = 2
+
+    # Get the sections
+    sections = []
+    for profile in wall_profiles:
+        sections.extend(profile)
+
+    # Parallel execution of the sections with arguments
+    with Pool(num_processes) as pool:
+        pool.starmap(process_section, [(section, 1) for section in sections])
+
+if __name__ == "__main__":
+    main()
+```
+
+Recommended reading:
+
+- https://pymotw.com/3/multiprocessing/index.html
+- https://docs.python.org/3/library/multiprocessing.html
+
+### 3. Multi-Process Logging
+
+A challenge in the implementation is to log the progress of the construction
+crews in a file that is shared between the processes.
+
+> https://docs.python.org/3/howto/logging-cookbook.html
+>
+> Although logging is thread-safe, and logging to a single file from 
+> multiple threads in a single process is supported, logging to a single 
+> file from multiple processes is not supported, because there is no 
+> standard way to serialize access to a single file across multiple 
+> processes in Python. 
+
+Proposed solution:
+
+```python
+# https://docs.python.org/3/howto/logging-cookbook.html
+# Section `Logging to a single file from multiple processes`
+
+import logging
+import logging.handlers
+from multiprocessing import Pool, Queue, Process
+import time
+import traceback
+import sys
+
+
+def configure_listener():
+    """ Configure the listener process to log to a file. """
+
+    # Get the root logger
+    root = logging.getLogger()
+
+    # Add a file handler to the root logger
+    file_handler = logging.FileHandler(filename='pool_logging.log', mode='w')
+
+    # Define the message format
+    formatter = logging.Formatter(
+        '%(asctime)s %(processName)-10s %(name)s %(levelname)-8s %(message)s')
+
+    # Apply the message format to the handler
+    file_handler.setFormatter(formatter)
+
+    # Add the file handler to the root logger
+    root.addHandler(file_handler)
+
+
+def listener_process(queue):
+    """ Process that listens for log messages on the queue. """
+
+    # Configure the listener process to log to a file
+    configure_listener()
+
+    # Process messages from the queue
+    while True:
+
+        try:
+
+            # Get the next log record from the queue
+            record = queue.get()
+
+            # Sentinel to tell the listener to quit
+            if record is None:
+                break
+
+            # Get the logger for the record
+            logger = logging.getLogger(record.name)
+
+            # Handle the log record using the registered log handlers
+            logger.handle(record)
+
+        # Handle exceptions gracefully
+        except Exception as e:
+            print(f'Whoops! Problem: {e}')
+            traceback.print_exc(file=sys.stderr)
+
+
+def configure_worker(queue):
+    """ Configure the worker process to log to the queue. """
+
+    # Create a QueueHandler to send log messages to a queue
+    handler = logging.handlers.QueueHandler(queue)
+
+    # Get the root logger
+    root = logging.getLogger()
+
+    # Add the QueueHandler to the root logger
+    root.addHandler(handler)
+
+    # Set the log level for the root logger
+    root.setLevel(logging.DEBUG)
+
+
+def worker_function(num):
+    """ Function that will be executed by the worker processes. """
+
+    # Each worker process needs to configure its logging
+    queue = worker_function.queue
+    configure_worker(queue)
+    logger = logging.getLogger(__name__)
+
+    # Worker process
+    logger.debug(f'Worker processing number: {num}')
+    time.sleep(1)
+    logger.info(f'Worker finished processing number: {num}')
+    return num * num
+
+
+def init_worker(queue):
+    """ Initialize the worker process with the queue.
+
+    This is a workaround when working with the Pool class as it uses pickle to
+    serialize objects that will be passed to the worker processes including
+    shard objects like Queues.
+    """
+    worker_function.queue = queue
+
+
+if __name__ == '__main__':
+
+    # Create a Queue to pass log messages from worker processes to the listener
+    log_queue = Queue()
+
+    # Start the listener process
+    listener = Process(target=listener_process, args=(log_queue,))
+    listener.start()
+
+    # Use a Pool to execute worker functions
+    with Pool(5, initializer=init_worker, initargs=(log_queue,)) as pool:
+        numbers = [1, 2, 3, 4, 5]
+        results = pool.map(worker_function, numbers)
+
+    # Stop the listener using the sentinel (None)
+    log_queue.put(None)
+    listener.join()
+
+    # Print the results
+    print('Results:', results)
+
+```
 
 ### 4. Proof of concept
 
@@ -59,62 +263,22 @@ understanding of the problem. The prototype will be just a simple Python
 script that takes the configuration as a python list and prints the daily
 status of the wall.
 
-```python
-def main():
-    wall_profiles = [
-        [10, 20],
-        [10, 5],
-        [20, 25]
-    ]
 
-    for day in range(1, 31):
-        print(f"Day {day}")
-        for profile in wall_profiles:
-            for section in profile:
-                print(f"Section: {section} Height: {section + day}")
-        print()
-```
+### . Brainstorm the system design
 
+### . Implement the REST API with Django
 
-### 5. Brainstorm the system design
+### . Implement unit tests for the backend
 
-### 7. Implement the REST API with Django
+### . Feedback from a beta tester
 
-### 10. Implement unit tests for the backend
+### . Docstrings
 
-**Functional tests**
+### . Containerize the solution
 
-We will implement unit tests for the Backend using Pytest. We will cover each class
-and method with unit tests to guarantee that the solution is working as expected. 
+### . Code review
 
-The testing discovered some bugs in the implementation that are related to the validation of the 
-input parameters. 
-
-**Performance tests**
-
-We will implement performance tests to check the performance of the solution. We will use the
-maximum number of random numbers to check the performance of the solution. Manual testing showed
-that RandomGenV2 is around 3 times slower than RandomGenV1.
-
-The task definition doesn't mention any performance requirements. We will assume that the solution
-should be fast enough to generate random numbers in a reasonable time. A reasonable time for the 
-backend is around 50 msec, bearing in mind that the REST API is going to stack on it and add
-some latency.
-
-
-### 13. Feedback from a beta tester
-
-### 15. Docstrings
-
-Now it is time to add docstrings to the classes and methods. We will use the
-**_Google Docstring_** format. The docstrings will be used to generate the API 
-manual.
-
-### 16. Containerize the solution
-
-### 17. Code review
-
-### 18. Documentation
+### . Documentation
 
 We will use MkDocs to build the documentation. The documentation will be
 deployed to GitHub Pages. The documentation will contain at least the following
@@ -127,7 +291,7 @@ sections:
 5. CONTRIBUTING.md
 6. README.md
 
-### 19. Create the CI/CD pipeline
+### . Create the CI/CD pipeline
 
 We will create a GitHub Actions workflow to run the tests on every push to the
 main branch. We will also create a GitHub Actions workflow to build and push the
@@ -139,7 +303,7 @@ What we want:
 3. Build and push the Docker image to Docker Hub on each push.
 4. Build the documentation and deploy it to GitHub Pages on every release.
 
-### 20. Tag the first increment
+### .First official release
 
 Till now, we were in the pre-development phase. After the tag, changes will be
 tracked using concrete issues in the commit messages.
