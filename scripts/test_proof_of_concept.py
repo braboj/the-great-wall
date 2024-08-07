@@ -15,7 +15,7 @@ def test_profile():
 
     # Create a wall profile with 3 sections
     sections = [WallSection(start_height=i) for i in range(1, 4)]
-    profile = WallProfile(full_name="Profile 1", sections=sections)
+    profile = WallProfile(name="Profile 1", sections=sections)
 
     for day in range(30):
         print(f"Day {day + 1}")

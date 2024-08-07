@@ -2,12 +2,12 @@ import logging
 import logging.handlers
 import time
 from multiprocessing import Process, Pool, Queue, current_process
-
+from abc import ABC, abstractmethod
 
 # Constants
-VOLUME_ICE_PER_FOOT = 195   # Material consumption per foot
-COST_PER_VOLUME = 1900      # Cost of material per volume
-WALL_HEIGHT = 30            # Fixed height of the wall
+VOLUME_ICE_PER_FOOT = 195  # Material consumption per foot
+COST_PER_VOLUME = 1900  # Cost of material per volume
+WALL_HEIGHT = 30  # Fixed height of the wall
 
 
 class LogListener(Process):
@@ -78,8 +78,8 @@ class LogListener(Process):
 class WallSection(object):
     """Represents a section of a wall."""
 
-    def __init__(self, start_height, key_id=''):
-        self.key_id = key_id
+    def __init__(self, start_height, name=''):
+        self.name = name
         self.start_height = start_height
         self.current_height = start_height
         self.log = logging.getLogger(__name__)
@@ -133,7 +133,7 @@ class WallSection(object):
         if self.current_height < WALL_HEIGHT:
             self.current_height += 1
 
-        self.log.info(f'Added 1 foot to section {self.key_id} to reach'
+        self.log.info(f'Added 1 foot to section {self.name} to reach'
                       f' {self.current_height} feet')
 
         time.sleep(0.05)
@@ -144,13 +144,13 @@ class WallSection(object):
 class WallProfile(object):
     """Represents a profile of a wall."""
 
-    def __init__(self, sections, full_name=''):
-        self.full_name = full_name
+    def __init__(self, sections, name=''):
+        self.name = name
         self.sections = sections
         self.log = logging.getLogger(__name__)
 
     def __repr__(self):
-        return (f"WallProfile(full_name={self.full_name}, "
+        return (f"WallProfile(full_name={self.name}, "
                 f"ice={self.get_ice()}, "
                 f"cost={self.get_cost()}, "
                 f"ready={self.is_ready()}"
@@ -168,6 +168,20 @@ class WallProfile(object):
     def get_cost(self):
         """Returns the total cost of the wall profile."""
         return self.get_ice() * COST_PER_VOLUME
+
+    def configure(self, queue):
+        """Configures the wall profile."""
+
+        log = logging.getLogger()
+
+        # Create a QueueHandler to send log messages to a queue
+        handler = logging.handlers.QueueHandler(queue)
+
+        # Add the QueueHandler to the root logger
+        log.addHandler(handler)
+
+        # Set the log level for the root logger
+        log.setLevel(logging.DEBUG)
 
     def build(self):
         """Builds the wall profile section by section."""
@@ -190,6 +204,36 @@ class WallBuilder(object):
         self.log = logging.getLogger()
 
     @staticmethod
+    def create_profile(heights, profile_id):
+        sections = [WallSection(start_height) for start_height in heights]
+        return WallProfile(sections=sections, name=f"P{profile_id:02d}")
+
+    def set_config(self, config_list):
+        self.config_list = config_list
+
+    def get_sections(self):
+
+        sections = []
+        index = 0
+
+        for profile in self.wall_profiles:
+            for section in profile.sections:
+                section.name = index
+                sections.append(section)
+                index += 1
+
+        return sections
+
+    def is_ready(self):
+        return all(section.is_ready() for section in self.sections)
+
+    def get_ice(self):
+        return sum(section.get_ice() for section in self.sections)
+
+    def get_cost(self):
+        return sum(section.get_cost() for section in self.sections)
+
+    @staticmethod
     def configure(queue):
 
         # Set the name of the current process
@@ -205,33 +249,6 @@ class WallBuilder(object):
 
         # Set the log level for the root logger
         log.setLevel(logging.DEBUG)
-
-    @staticmethod
-    def create_profile(heights, profile_id):
-        sections = [WallSection(start_height) for start_height in heights]
-        return WallProfile(sections=sections, full_name=f"P{profile_id:02d}")
-
-    def set_config(self, config_list):
-        self.config_list = config_list
-
-    def get_sections(self):
-
-        sections = []
-        index = 0
-
-        for profile in self.wall_profiles:
-            for section in profile.sections:
-                section.key_id = index
-                sections.append(section)
-                index += 1
-
-        return sections
-
-    def get_ice(self):
-        return sum(section.get_ice() for section in self.sections)
-
-    def get_cost(self):
-        return sum(section.get_cost() for section in self.sections)
 
     def build(self, max_teams=None, days=None):
 
@@ -274,7 +291,7 @@ class WallBuilder(object):
         for day in range(days):
 
             # Check if all sections are ready
-            if all(section.is_ready() for section in self.sections):
+            if self.is_ready():
                 break
 
             self.log.info(f"Day {day + 1}")
@@ -304,7 +321,6 @@ class WallBuilder(object):
 
 
 def main():
-
     # Define the wall configuration
     config_list = [
         [29, ] * 10,
