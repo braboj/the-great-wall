@@ -31,12 +31,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'wall_tracker.apps.WallTrackerConfig',
+    # 'wall_tracker.apps.WallTrackerConfig',
+    'hello_world.apps.HelloWorldConfig',
 ]
 
 MIDDLEWARE = [
