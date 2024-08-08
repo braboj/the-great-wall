@@ -1,0 +1,45 @@
+@startuml
+
+' Define WallProfile entity
+entity WallProfile {
+    +id: Integer
+    --
+    +name: String
+}
+
+' Define WallSection entity
+entity WallSection {
+    +id: Integer
+    --
+    +profile_id: Integer
+    +name: String
+    +start_height: Integer
+    +current_height: Integer
+    +ice: Integer
+    +cost: Integer
+}
+
+' Define Team entity
+entity Team {
+    +id: Integer
+    --
+    +section_id: Integer
+    +name: String
+}
+
+' Define DailyLog entity
+entity DailyLog {
+    +id: Integer
+    --
+    +section_id: Integer
+    +day: Integer
+    +ice: Integer
+    +cost: Integer
+}
+
+' Define relationships
+WallProfile "1" -- "1..*" WallSection : contains
+WallSection "1" -- "1" Team : assigned to
+WallSection "1" -- "0..*" DailyLog : has
+
+@enduml

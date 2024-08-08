@@ -1,7 +1,7 @@
-## Problem Analysis
+# Problem Analysis
 
 
-### 1. Background
+## 1. Background
 
 The Wall is a colossal fortification intended to defend a realm from 
 external threats. It stretches for 300 miles along the northern border and 
@@ -10,7 +10,7 @@ construction crew tasked with increasing the section's height by 1 foot
 each day until it reaches a total height of 30 feet.
 
 
-### 2. Objectives
+## 2. Scope
 
 The goal is to develop a REST API to simulate and track the construction of 
 a fictional defensive wall using the Django framework and Django Rest 
@@ -18,7 +18,7 @@ Framework (DRF). This wall consists of multiple sections, and the system
 should accurately track the progress, material usage, and costs associated 
 with the construction.
 
-### 3. Construction Process
+The construction process is as follows:
 
 - Each foot added to a section uses 195 cubic yards of ice.
 - Processing one cubic yard of ice costs 1900 Gold Dragon coins.
@@ -26,15 +26,15 @@ with the construction.
   feet in height. Once a section reaches 30 feet, its crew is relieved.
 - After the crew is relieved, it can be reallocated to another section of 
   the wall (relocate mode)
-  
-### 4. Construction Mode
 
-1. **Relocate Mode**: Given number of construction crews that can be 
-reallocated to different sections of the wall after they finish.
-2. **Bound Mode**: The construction crews are bound to the section they 
-   started working on. 
+## 3. Features
 
-### 5. Requirements
+- REST API to track the construction of the wall
+- Multi-processing to simulate the construction of the wall
+- Logging to track the progress of the construction
+- Configurable wall profiles and work crews
+
+## 4. Requirements
 
 The requirements are divided into three categories based on RFC 2119:
 
@@ -43,15 +43,15 @@ The requirements are divided into three categories based on RFC 2119:
 - `MAY`  - Task that is optional
 
 
-### 5.1. Technology Stack
+### 4.1. Technology Stack
 
 - `MUST` - Use **Django and Django Rest Framework**
 - `MUST` - Use **Docker** to containerize the solution
 - `MUST` - Use **unittest** to test the solution
 - `SHOULD` - Use Python 3.12+
-- `MAY` - Use SQLite as the database
+- `MAY` - Use SQLite as the database for persistence
 
-### 5.2. Input
+### 4.2. Input
 
 - `MUST` - Provide a configuration file containing wall profiles. 
 - `MUST` - Configuration file contains one or lines for each wall profile
@@ -61,8 +61,9 @@ The requirements are divided into three categories based on RFC 2119:
 - `MUST` - The maximum allowed number of sections is 2000
 - `MAY` - The user MAY change the wall profiles using the REST API
 - `MAY` - The user MAY adjust the number of crews using the REST API
-
-### 5.3. Output
+- `MAY` - The configuration file contains sections
+ 
+### 4.3. Output
 
 - `MUST` - Provide an endpoint to get the daily status of the wall
 - `MUST` - Provide an endpoint to get the total cost of the wall
@@ -160,21 +161,3 @@ cost: “32,233,500”
 - As a user, I can access the total cost of the wall using the API.
 - As a user, I can access the log files using the API.
 - As a user, I can adjust the number of crews using the API.
-
-
-### 8. Questions
-
-> This section is only for demonstrating the questions that arise during the
-> analysis phase. The questions are not expected to be answered in the context
-> of the problem.
-
-1. The length of the wall is 300 miles, but it seems the length is not relevant
-to the problem.
-2. Are we obliged to use a database to store the wall profiles and sections?
-3. Should we use the library `unittest` as a standard library for testing?
-4. How is the user  to set the configuration file and the
-log file? 
-5. Can we ssume that the solution will not be assessed based on some 
-   performance, e.g. response time?
-6. Should we extend the `multiprocessing.get_logger()` to log tap the messages
-from the library or focus on our custom logger?

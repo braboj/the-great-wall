@@ -1,0 +1,15 @@
+@startuml
+/'
+Provide the overall system context that includes:
+
+- User roles
+- Our system, could be more than 1
+- Externals systems such as github, docker registry, cloud providers, etc.
+- Interactions between the systems
+
+Suitable diagrams:
+- https://plantuml.com/deployment-diagram
+
+'/
+
+@enduml

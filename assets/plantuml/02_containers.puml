@@ -1,0 +1,14 @@
+@startuml
+title Container Diagram
+
+actor User as user
+
+package System {
+    [Tracker App] as tracker
+    [Database] as db
+}
+
+user --> tracker : Interacts with
+tracker --> db : Reads/Writes
+
+@enduml
