@@ -294,7 +294,7 @@ class WallProfile(WallBuilderAbc):
         return self
 
 
-class WallBuilder(WallBuilderAbc):
+class WallBuilderSimulator(WallBuilderAbc):
     """Manages the construction of a wall."""
 
     def __init__(self):
@@ -463,7 +463,7 @@ def main():
     ]
 
     # Create a wall builder
-    builder = WallBuilder()
+    builder = WallBuilderSimulator()
     builder.set_config(config_list)
     builder.build(max_teams=1, days=30)
 

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .builder import *
+from .simulator import *
 
 
 class TestWallSection(TestCase):
@@ -263,7 +263,7 @@ class TestWallProfile(TestCase):
 class TestWallBuilder(TestCase):
 
     def setUp(self):
-        self.builder = WallBuilder()
+        self.builder = WallBuilderSimulator()
         self.sections = [WallSection(i) for i in range(3)]
         self.profiles = [WallProfile(self.sections) for _ in range(3)]
         self.builder.wall_profiles = self.profiles
@@ -286,7 +286,7 @@ class TestWallBuilder(TestCase):
 
         # Create a profile
         heights = [0, 1, 2]
-        profile = WallBuilder.create_profile(heights, 0)
+        profile = WallBuilderSimulator.create_profile(heights, 0)
 
         # Check the profile is created
         self.assertEqual(profile.name, 'P00')
