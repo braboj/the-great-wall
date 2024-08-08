@@ -1,5 +1,5 @@
-from django.test import TestCase
-from .simulator import *
+from unittest import TestCase
+from builder.simulator import *
 
 
 class TestWallSection(TestCase):

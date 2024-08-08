@@ -48,7 +48,7 @@ class LogListener(Process):
         console_handler = logging.StreamHandler()
 
         # Add a file handler to the root logger
-        file_handler = logging.FileHandler(filename='pool_logging.log',
+        file_handler = logging.FileHandler(filename='../tracker/pool_logging.log',
                                            mode='w')
 
         # Apply the message format to the handler
