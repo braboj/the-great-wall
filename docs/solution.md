@@ -6,9 +6,18 @@
 2. [Multi-Processing](#2-multi-processing)
 3. [Multi-Process Logging](#3-multi-process-logging)
 4. [Proof of Concept](#4-proof-of-concept)
+5. [Introduction to Django](#5-introduction-to-django)
 
 ### 1. Development Environment
 
+_Time spent: 1 hours_
+
+#### Objectives
+* Define the programming environment
+* Define standards for further contributions
+* Define the technology stack
+
+#### 
 | Category             | Details                   |
 |----------------------|---------------------------|
 | Programming Language | Python 3.12+              |
@@ -20,21 +29,25 @@
 | Git Hosting          | GitHub                    |
 | CI/CD                | GitHub Actions            |
 | Documentation        | GitHub Pages, MkDocs      |
-
+| Containerization     | Docker                    |
+| Web Framework        | Django                    |
 
 ### 2. Multi-Processing
 
-_Time spent: 6 hours for reading, prototyping and implementation_
-
-The task definition doesn't mention any performance requirements. We will 
-concentrate on the implementation of the solution based on the task definition.
-We will use the `multiprocessing` module to simulate multiple construction crews
-working on the wall.
+_Time spent: 6 hours for research, prototyping and implementation_
 
 Processes are usesful for CPU-bound tasks, while threads are useful for 
 I/O-bound tasks. CPU-bound tasks are tasks that require a lot of computations,
 while I/O-bound tasks are tasks that require a lot of waiting for input/output
 operations (from the network, disk, database, etc.).
+
+We will concentrate on the implementation of the solution based on the task 
+definition. We will use the `multiprocessing` module to simulate multiple 
+construction crews working on the wall.
+ 
+The idea is to simulate a CPU bound task where each construction crew is working
+to complete a task. In the end, we shall notice a performance improvement when
+using multiple processes.
 
 The multiprocessing module allows us to create multiple processes that run
 in parallel. Each process will simulate a construction crew working on a
@@ -291,11 +304,10 @@ import logging.handlers
 import time
 from multiprocessing import Process, Pool, Queue, current_process
 
-
 # Constants
-VOLUME_ICE_PER_FOOT = 195   # Material consumption per foot
-COST_PER_VOLUME = 1900      # Cost of material per volume
-WALL_HEIGHT = 30            # Fixed height of the wall
+VOLUME_ICE_PER_FOOT = 195  # Material consumption per foot
+COST_PER_VOLUME = 1900  # Cost of material per volume
+WALL_HEIGHT = 30  # Fixed height of the wall
 
 
 class LogListener(Process):
@@ -387,7 +399,6 @@ class WallSection(object):
 
     @staticmethod
     def configure(queue):
-
         log = logging.getLogger()
 
         # Create a QueueHandler to send log messages to a queue
@@ -509,7 +520,7 @@ class WallBuilder(object):
 
         for profile in self.wall_profiles:
             for section in profile.sections:
-                section.key_id = index
+                section.name = index
                 sections.append(section)
                 index += 1
 
@@ -592,7 +603,6 @@ class WallBuilder(object):
 
 
 def main():
-
     # Define the wall configuration
     config_list = [
         [29, ] * 10,
@@ -610,8 +620,42 @@ if __name__ == "__main__":
 ```
 
 
-### 5. Introduction to Django and Django REST framework
+### 5. Introduction to Django
 
+Objectives:
+* Project Setup
+* Project Structure
+* Django Views
+* Routing of URLs
+* Working app without database
+
+```txt
+# Create a django project:
+django-admin startproject <replace_with_your_project_name>
+
+# Start the Django project:
+python manage.py runserver
+
+# Create a new Django app
+python manage.py startapp <replace_with_your_app_name>
+```
+
+| Category | Details                                                                                                                        |
+|----------|--------------------------------------------------------------------------------------------------------------------------------|
+| project  | A project is a collection of configurations and apps. One project can be composed of multiple apps, or a single app.           |
+| app      | Web application that does something. An app usually is composed of a set of models (database tables), views, templates, tests. |
+| model    | A model is a Python class represents a database table.                                                                         | 
+| view     | A view is a Python function that takes a web request and returns a web response.                                               |
+| template | A template is an HTML file that contains placeholders for dynamic content.                                                     |
+
+
+
+
+See also:
+- https://simpleisbetterthancomplex.com/series/beginners-guide/1.11/
+- https://www.djangoproject.com/
+- https://www.django-rest-framework.org/
+- https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django
 
 
 ### . Brainstorm the system design
