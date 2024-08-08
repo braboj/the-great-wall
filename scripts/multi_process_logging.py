@@ -5,7 +5,7 @@ from threading import Thread
 import time
 
 
-class LogListener(Thread):
+class LogListener(Process):
 
     def __init__(self, queue):
         super().__init__()
