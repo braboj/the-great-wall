@@ -1,5 +1,5 @@
 """
-URL configuration for wall_project project.
+URL configuration for project project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.0/topics/http/urls/
@@ -16,10 +16,18 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path
-from hello_world import views
 from django.contrib import admin
+from tracker import views
 
 urlpatterns = [
-       path('admin/', admin.site.urls),
-    path(r'', views.home, name='home'),
+    path('overview/', views.total_cost, name='total_cost'),
+    path('overview/<int:day>/', views.total_daily_cost, name='profile_detail'),
+    path('<int:profile>/overview/<int:day>/', views.total_daily_profile_cost, name='profile_day_detail'),
+    path('<int:profile>/days/<int:day>/', views.profile_day_detail, name='profile_day_detail'),
 ]
+
+
+# GET /profiles/overview/
+# GET /profiles/overview/1/
+# GET /profiles/1/overview/1/
+# GET /profiles/1/days/1
