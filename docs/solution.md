@@ -13,7 +13,7 @@ _Time spent: 3 hours_
 See:
  - [analysis.md](analysis.md)
 
-### References
+### 1.2. References
 
 - https://en.wikipedia.org/wiki/Software_development_process
 
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 - https://pymotw.com/3/multiprocessing/index.html
 - https://docs.python.org/3/library/multiprocessing.html
 
-## 3. Multi-Process Logging
+## 3. Consistent Logging
 
 _Time spent: 2 hours for reading, prototyping and implementation_
 
@@ -207,6 +207,9 @@ _Time spent: 4 hours for implementation and testing_
 * [x] Test the prototype with different configurations
 * [x] Simple positive tests to check the implementation
 
+
+### 4.2. Definition
+
 In this step, we will create a simple proof of concept to check our 
 understanding of the problem. The prototype will be a simple Python 
 script that takes the following arguments as python objects: 
@@ -220,8 +223,9 @@ configurable sleep function. By increasing the number of worker processes, we
 expect the calculations to be done faster. The total amount of ice and cost
 is not affected by the number of workers.
 
-Source:
+Sources:
 - [/scripts/proof_of_concept.py](../scripts/proof_of_concept.py)
+- [/scripts/test_proof_of_concept.py](../scripts/test_proof_of_concept.py)
 
 ## 5. Product Design
 
@@ -246,7 +250,7 @@ _Time spent: 4 hours for implementation_
 - **tracker** - Django service to track the progress of the construction crews
 - **scripts/** - Contains the scripts used to automate tasks, prototypes, etc.
 
-### 5.3. Diagrams
+### 5.3. Design Diagrams
 
  - [ ] System Context
  - [ ] Containers
@@ -265,7 +269,7 @@ _Time spent: 4 hours for implementation_
 - https://c4model.com/img/c4-overview.png
 
 
-## 6. Introduction to Django
+## 6. Django REST API
 
 ### 6.1. Objectives
 
@@ -333,35 +337,118 @@ urlpatterns = [
 
 ![hello_world.png](../assets/images/django_route_hello_world.png)
 
-### 6.6. Add the required views and route them
+### 6.6. Add the required dummy views and route them
 
 Add the required views that will just echo the input data. The views will 
 later connect to the wall builder simulator.
 
 ![django_route_profiles_overview.png](../assets/images/django_route_profiles_overview.png)
-
 ![profiles_overview_day.png](../assets/images/django_route_profiles_overview_1.png)
-
 ![django_route_profiles_1_overview_1.png](../assets/images/django_route_profiles_1_overview_1.png)
+![/django_route_profiles_1_days_1.png](../assets/images/django_route_profiles_1_days_1)
 
-![img.png](../assets/images/django_route_profiles_1_days_1)
+### 6.7. Connect the views to the wall builder logic
 
-### 6.7. Connect the views and the wall builder logic
+First, we will start to connect the views to the builder logic. As input we
+will take the example in the documentation:
 
-### 6.8. References
+```text
+21 25 28
+17
+17 22 17 19 17
+```
+
+The expected output is:
+
+```text
+GET /profiles/1/days/1/
+RETURNS: {
+day: ”1”;
+ice_amount: “585”
+}
+
+GET /profiles/1/overview/1/
+RETURNS: {
+day: ”1”;
+cost: “1,111,500”
+}
+
+GET /profiles/overview/1/
+RETURNS: {
+day: ”1”;
+cost: “3,334,500”
+}
+
+GET /profiles/overview/
+RETURNS: {
+day: None;
+cost: “32,233,500”
+}
+```
+
+Result:
+- [Rest_API_routing_test.mp4](..%2Fassets%2Fvideos%2FRest_API_routing_test.mp4)
+
+### Optimize the URL routing
+
+For simplicity, the current implementation has a 1:1 mapping from url to view.
+
+```text
+urlpatterns = [
+    path('overview/', views.total_cost, name='total_cost'),
+    path('overview/<int:day_id>/', views.daily_cost, name='daily_cost'),
+    path('<int:profile_id>/overview/<int:day_id>/', views.daily_profile_cost,
+         name='daily_profile_cost'),
+    path('<int:profile_id>/days/<int:day_id>/', views.profile_daily_details,
+         name='profile_day_detail'),
+]
+```
+We will refactor the mapping and reduce the registered URL's
+
+urlpatterns = [
+    path('overview/', views.total_cost, name='total_cost'),
+    path('overview/<int:day_id>/', views.daily_cost, name='daily_cost'),
+    path('<int:profile_id>/overview/<int:day_id>/', views.daily_profile_cost,
+         name='daily_profile_cost'),
+    path('<int:profile_id>/days/<int:day_id>/', views.profile_daily_details,
+         name='profile_day_detail'),
+]
+
+### Update the builder simulator
+
+The current implementation of the simulator has the following problems:
+
+- The calculation distributes the work to the sections, and thus the profiles 
+  are not updated with the new values.
+- The module lacks a good exception hierarchy with meaningful messages
+
+
+
+
+
+### 6.. Allow configuration from the user
+
+- WallConfigurator class (ini file), teams and profile
+- Extend the REST API to allow the user to configure the wall
+
+### 6.. References
 - https://simpleisbetterthancomplex.com/series/beginners-guide/1.11/
 - https://www.djangoproject.com/
 - https://www.django-rest-framework.org/
 - https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django
+- https://apiguide.readthedocs.io/en/latest/index.html
+- https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
 
+## . Code Review
 
-### . Containerize the solution
+- [ ] Code Review of the builder logic (code, tests, docstrings, diagrams)
+- [ ] Code Review of the Django REST API (code, tests, docstrings, diagrams)
+ 
+## . Containerize the solution
 
-### . Feedback from a beta tester
+## . Feedback from a beta tester
 
-### . Code review
-
-### . Documentation
+## . Documentation
 
 We will use MkDocs to build the documentation. The documentation will be
 deployed to GitHub Pages. The documentation will contain at least the following
@@ -374,7 +461,7 @@ sections:
 5. CONTRIBUTING.md
 6. README.md
 
-### . Create the CI/CD pipeline
+## . Create the CI/CD pipeline
 
 We will create a GitHub Actions workflow to run the tests on every push to the
 main branch. We will also create a GitHub Actions workflow to build and push the
@@ -386,13 +473,13 @@ What we want:
 2. Build and push the Docker image to Docker Hub on each push.
 3. Build the documentation and deploy it to GitHub Pages in every release.
 
-### .Release
+## . Release
 
 Till now, we were in the pre-development phase. After the tag, changes will be
 tracked using concrete issues in the commit messages.
 
 
-### . Additional Tasks
+## . Additional Tasks
 
 - Django Models for persisting the data
-- Django REST framework for the API
+- Django REST framework to create the REST API

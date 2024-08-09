@@ -6,11 +6,8 @@
 
 1. The length of the wall is 300 miles, but it seems the length is not relevant
 to the problem.
-2. Are we obliged to use a database to store the wall profiles and sections?
+2. The task has not speficied to store the data in a database. Shall we assume
+to solve the task without using a database?
 3. Should we use the library `unittest` as a standard library for testing?
-4. How is the user  to set the configuration file and the
-log file? 
-5. Can we ssume that the solution will not be assessed based on some 
-   performance, e.g. response time?
-6. Should we extend the `multiprocessing.get_logger()` to log tap the messages
-from the library or focus on our custom logger?
+4. How is the user to interact with the solution configuration? Shall we use
+   a configuration file, command-line arguments or the REST API?
