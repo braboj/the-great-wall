@@ -6,6 +6,7 @@ import logging
 import logging.handlers
 import time
 import os
+import math
 
 # Constants
 LOG_FILE = os.path.join(ROOT_DIR, 'data', 'wall_progress.log')
@@ -104,29 +105,36 @@ class LogListener(Process):
 
 
 class WallBuilderAbc(ABC):
+    """Abstract base class for the wall builder."""
 
     @abstractmethod
     def is_ready(self):
+        """Check if the wall is ready to be constructed."""
         raise NotImplementedError
 
     @abstractmethod
     def get_ice(self):
+        """Get the total ice consumed by the wall."""
         raise NotImplementedError
 
     @abstractmethod
     def get_cost(self):
+        """Get the total cost of the wall."""
         raise NotImplementedError
 
     @abstractmethod
     def prepare(self, *args, **kwargs):
+        """Prepare the wall builder for construction."""
         raise NotImplementedError
 
     @abstractmethod
     def build(self, *args, **kwargs):
+        """Build the wall."""
         raise NotImplementedError
 
     @abstractmethod
     def validate(self):
+        """Validate the wall builder configuration."""
         raise NotImplementedError
 
 
@@ -134,6 +142,8 @@ class WallSection(WallBuilderAbc):
     """Represents a section of a wall.
 
     Attributes:
+        section_id (int): The name of the wall section.
+        profile_id (int): The profile ID of the wall section.
         start_height (int): The starting height of the wall section.
         current_height (int): The current height of the wall section.
         log (Logger): The logger for the wall section.
@@ -143,8 +153,9 @@ class WallSection(WallBuilderAbc):
         """Initializes the wall section.
 
         Args:
+            section_id (int): The section identifier
+            profile_id (int): The profile ID of the wall section.
             start_height (int): The starting height of the wall section.
-            section_id (int): The name of the wall section.
         """
 
         # Set the instance attributes
@@ -179,6 +190,19 @@ class WallSection(WallBuilderAbc):
         return self.get_ice() * COST_PER_VOLUME
 
     def validate(self):
+        """Validates the wall section configuration.
+
+        This method validates the configuration of the wall section by checking
+        the data types and values of the attributes. It raises exceptions if
+        the attributes are not of the correct type or value.
+
+        Raises:
+            TypeError: If the data types of the attributes are incorrect.
+            ValueError: If the values of the attributes are incorrect.
+        """
+
+        # ----------------------------------------------------------------------
+        # Validate current_height
 
         # Check the type of the start height
         if not isinstance(self.start_height, int):
@@ -188,6 +212,9 @@ class WallSection(WallBuilderAbc):
         if not 0 <= self.start_height <= TARGET_HEIGHT:
             raise ValueError('The start height must be between 0 and 30')
 
+        # ----------------------------------------------------------------------
+        # Validate section_id
+
         # Check the type of section_id
         if not isinstance(self.section_id, int):
             raise TypeError('The section_id must be an integer')
@@ -196,28 +223,53 @@ class WallSection(WallBuilderAbc):
         if not self.section_id >= 0:
             raise ValueError('The section_id must be a positive integer')
 
+        # ----------------------------------------------------------------------
+        # Validate profile_id
+
         # Check the type of profile_id
         if not isinstance(self.profile_id, (int, type(None))):
             raise TypeError('The profile_id must be an integer')
 
+        # Check that the profile_id is positive
+        if not self.profile_id >= 0:
+            raise ValueError('The profile_id must be a positive integer')
 
     @staticmethod
     def prepare(queue):
-        """Configures the wall section to log to a queue."""
+        """Configures the wall section to log to a queue.
 
-        log = logging.getLogger()
+        This method configures the wall section to log messages to a queue
+        instead of the console. It creates a QueueHandler and adds it to the
+        root logger.
+
+        Args:
+            queue (Queue): A queue to receive log messages
+        """
+
+        # Get the root logger
+        root_log = logging.getLogger()
 
         # Create a QueueHandler to send log messages to a queue
         handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
-        log.addHandler(handler)
+        root_log.addHandler(handler)
 
         # Set the log level for the root logger
-        log.setLevel(logging.DEBUG)
+        root_log.setLevel(logging.INFO)
 
     def build(self):
-        """Build the section by one foot per day."""
+        """Increment the section height with the build rate (foot/day).
+
+        This method is part of a simulation process where each call to `build`
+        increases the current height of the wall section by a predefined build
+        rate. The method also renames the current worker process for better
+        identification and logs the progress of the construction. It simulates
+        time taken for the building process using a sleep function.
+
+        Returns:
+            WallSection: The updated wall section instance.
+        """
 
         # Rename the worker process
         original_name = current_process().name
@@ -225,7 +277,7 @@ class WallSection(WallBuilderAbc):
 
         # Build the wall until the desired height is reached
         if self.current_height < TARGET_HEIGHT:
-            self.current_height += 1
+            self.current_height += BUILD_RATE
 
         # Log the build progress
         self.log.info(f'Added 1 foot to section {self.section_id} to reach'
@@ -239,10 +291,21 @@ class WallSection(WallBuilderAbc):
 
 
 class WallProfile(WallBuilderAbc):
-    """Represents a profile of a wall."""
+    """Represents a profile of a wall.
+
+    Attributes:
+        profile_id (int): The profile ID of the wall profile.
+        sections (list): A list of wall sections in the profile.
+        log (Logger): The logger for the wall profile.
+    """
 
     def __init__(self, profile_id, sections=None):
-        """Initializes the wall profile."""
+        """Initializes the wall profile.
+
+        Args:
+            profile_id (int): The profile ID of the wall profile.
+            sections (list): A list of wall sections in the profile.
+        """
 
         # Set the instance attributes
         self.profile_id = profile_id
@@ -272,6 +335,26 @@ class WallProfile(WallBuilderAbc):
         return self.get_ice() * COST_PER_VOLUME
 
     def validate(self):
+        """Validates the wall profile configuration.
+
+        This method validates the configuration of the wall profile by checking
+        the data types and values of the attributes. It raises exceptions if
+        the attributes are not of the correct type or value.
+        """
+
+        # ----------------------------------------------------------------------
+        # Validate profile_id
+
+        # Check the type of profile_id
+        if not isinstance(self.profile_id, int):
+            raise TypeError('The profile_id must be an integer')
+
+        # Check that the profile_id is positive
+        if not self.profile_id >= 0:
+            raise ValueError('The profile_id must be a positive integer')
+
+        # ----------------------------------------------------------------------
+        # Validate sections
 
         # Check that sections is a list
         if not isinstance(self.sections, list):
@@ -285,45 +368,68 @@ class WallProfile(WallBuilderAbc):
         if not 1 <= len(self.sections) <= MAX_SECTION_COUNT:
             raise MemoryError('The sections count must be between 1 and 2000')
 
-        # Check that the name is a string
-        # if not isinstance(self.name, str):
-        #     raise TypeError('The name must be a string')
-
     @staticmethod
     def prepare(queue):
-        """Configures the wall profile."""
+        """Configures the wall section to log to a queue.
 
-        # Get the logger for the wall profile
-        log = logging.getLogger()
+        This method configures the wall profile to log messages to a queue
+        instead of the console. It creates a QueueHandler and adds it to the
+        root logger.
+
+        Args:
+            queue (Queue): A queue to receive log messages.
+        """
+
+        # Get the root logger
+        root_log = logging.getLogger()
 
         # Create a QueueHandler to send log messages to a queue
         handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
-        log.addHandler(handler)
+        root_log.addHandler(handler)
 
         # Set the log level for the root logger
-        log.setLevel(logging.DEBUG)
+        root_log.setLevel(logging.INFO)
 
-    def build(self, days=1):
-        """Builds the wall profile section by section."""
+    def build(self):
+        """Builds all sections in the wall profile by the build rate.
 
-        for day in range(days):
+        This method builds each section in the wall profile by calling the
+        `build` method of each section. The method logs the progress of the
+        construction and returns the updated wall profile instance.
 
-            # Build each section
-            for section in self.sections:
-                if not section.is_ready():
-                    section.build()
+        Returns:
+            WallProfile: The updated wall profile instance.
+        """
+
+        # Build each section
+        for section in self.sections:
+            if not section.is_ready():
+                section.build()
 
         # Return the updated wall profile
         return self
 
 
-class WallBuilderSimulator(WallBuilderAbc):
-    """Manages the construction of a wall."""
+class WallManager(WallBuilderAbc):
+    """Manages the construction of a wall.
+
+    Attributes:
+        config_list (list): A list of wall section configurations.
+        profiles (list): A list of wall profiles.
+        sections (list): A list of wall sections.
+        log (Logger): The logger for the wall builder.
+        log_queue (Queue): A queue to receive log messages.
+        log_listener (LogListener): A process to listen for log messages.
+    """
 
     def __init__(self, config_list):
-        """Initializes the wall builder."""
+        """Initializes the wall builder.
+
+        Args:
+            config_list (list): A nested list of wall section configurations.
+        """
 
         # Set the instance attributes
         self.config_list = config_list
@@ -333,6 +439,8 @@ class WallBuilderSimulator(WallBuilderAbc):
         # Set the logger for the wall builder
         self.log = logging.getLogger()
         self.log_queue = Queue()
+
+        # Create and start the log listener process
         self.log_listener = LogListener(self.log_queue)
         self.log_listener.start()
 
@@ -345,6 +453,12 @@ class WallBuilderSimulator(WallBuilderAbc):
         self.log.info('-' * 80)
 
     def parse_config(self):
+        """Parse the configuration list to create wall sections.
+
+        This method parses the configuration list to create wall sections. It
+        creates a wall profile for each row in the configuration list and
+        populates the sections with the start heights.
+        """
 
         # Helper variable to track the section ID
         section_id = 0
@@ -369,11 +483,13 @@ class WallBuilderSimulator(WallBuilderAbc):
             self.profiles.append(profile)
             self.sections.extend(profile.sections)
 
-        # Return the list of wall sections
-        return self.sections
-
     def update_profiles(self):
-        """Update the profiles after calculations."""
+        """Update the profiles after calculations.
+
+        This method is used to update the profiles after the calculations are
+        complete. It filters the sections based on the profile ID and assigns
+        the filtered sections to the profile.
+        """
 
         for profile in self.profiles:
             profile_sections = list(
@@ -395,6 +511,12 @@ class WallBuilderSimulator(WallBuilderAbc):
         return sum(section.get_cost() for section in self.sections)
 
     def validate(self):
+        """Validate the wall builder configuration.
+
+        This method validates the configuration of the wall builder by checking
+        the data types and values of the attributes. It raises exceptions if
+        the attributes are not of the correct type or value.
+        """
 
         # Check that config_list is a list
         if not isinstance(self.config_list, list):
@@ -406,6 +528,15 @@ class WallBuilderSimulator(WallBuilderAbc):
 
     @staticmethod
     def prepare(queue):
+        """Configures the wall manager to log to a queue.
+
+        This method configures the wall manager to log messages to a queue
+        instead of the console. It creates a QueueHandler and adds it to the
+        root logger.
+
+        Args:
+            queue (Queue): A queue to receive log messages.
+        """
 
         # Set the name of the current process
         current_process().name = 'Manager'
@@ -423,6 +554,20 @@ class WallBuilderSimulator(WallBuilderAbc):
         log.setLevel(logging.DEBUG)
 
     def build(self, days=None, num_teams=None):
+        """Build the wall using a pool of workers.
+
+        This method builds the wall using a pool of workers. The workers are
+        mapped to the build method of the wall sections. The method logs the
+        progress of the construction and returns the updated wall builder
+        instance.
+
+        Args:
+            days (int): The number of days to build the wall.
+            num_teams (int): The number of construction teams.
+
+        Returns:
+            WallManager: The updated wall builder instance.
+        """
 
         # Check if construction teams are specified
         if num_teams is None:
@@ -430,12 +575,12 @@ class WallBuilderSimulator(WallBuilderAbc):
 
         # Calculate the days and roundup to the nearest integer
         if days is None:
-            days = -(-TARGET_HEIGHT // BUILD_RATE)
+            days = math.ceil(TARGET_HEIGHT / BUILD_RATE)
 
         # Configure the wall builder to log to the queue
         self.prepare(self.log_queue)
 
-        # Parse the sections from the confoguration list
+        # Parse the sections from the configuration list
         self.parse_config()
 
         # Create a pool of workers
@@ -445,6 +590,7 @@ class WallBuilderSimulator(WallBuilderAbc):
             initargs=(self.log_queue,),
         )
 
+        # Start the timer
         start_time = time.time()
 
         # Build the wall
@@ -459,14 +605,15 @@ class WallBuilderSimulator(WallBuilderAbc):
             # Map a section from a profile to a worker
             self.sections = pool.map(WallSection.build, self.sections)
 
-        # Update the profiles
-        self.update_profiles()
+        # End the timer
+        end_time = time.time()
 
         # Close the pool of workers
         pool.close()
         pool.join()
 
-        end_time = time.time()
+        # Update the profiles
+        self.update_profiles()
 
         # Log the results
         self.report(start_time=start_time, end_time=end_time)
@@ -493,7 +640,7 @@ def main():
     ]
 
     # Create a wall builder
-    builder = WallBuilderSimulator(config_list)
+    builder = WallManager(config_list)
     builder.build(num_teams=20, days=30)
 
     # Profile 1
