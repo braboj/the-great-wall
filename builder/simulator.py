@@ -22,15 +22,17 @@ class LogListener(Process):
     """Process that listens for log messages on a queue.
 
     Attributes:
-        queue (Queue): A queue to receive log messages.
-        root (Logger): The root logger.
+        queue (Queue)       : A queue to receive log messages.
+        logfile (str)       : The name of the log file.
+        root_log (Logger)   : The root logger.
     """
 
     def __init__(self, queue, logfile=LOG_FILE):
         """Initializes the log listener process.
 
         Args:
-            queue (Queue): A queue to receive log messages.
+            queue (Queue)   : A queue to receive log messages.
+            logfile (str)   : The name of the log file.
         """
 
         # Initialize the parent class
@@ -43,7 +45,7 @@ class LogListener(Process):
         self.logfile = logfile
 
         # Get the root logger
-        self.root = logging.getLogger()
+        self.root_log = logging.getLogger()
 
     def configure(self):
         """Configure the listener process to log to a file."""
@@ -69,8 +71,8 @@ class LogListener(Process):
         console_handler.setFormatter(formatter)
 
         # Add the handlers to the root logger
-        self.root.addHandler(file_handler)
-        self.root.addHandler(console_handler)
+        self.root_log.addHandler(file_handler)
+        self.root_log.addHandler(console_handler)
 
     def run(self):
         """Process that listens for log messages on the queue."""
@@ -116,7 +118,7 @@ class WallBuilderAbc(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def configure(self, *args, **kwargs):
+    def prepare(self, *args, **kwargs):
         raise NotImplementedError
 
     @abstractmethod
@@ -200,7 +202,7 @@ class WallSection(WallBuilderAbc):
 
 
     @staticmethod
-    def configure(queue):
+    def prepare(queue):
         """Configures the wall section to log to a queue."""
 
         log = logging.getLogger()
@@ -287,7 +289,8 @@ class WallProfile(WallBuilderAbc):
         # if not isinstance(self.name, str):
         #     raise TypeError('The name must be a string')
 
-    def configure(self, queue):
+    @staticmethod
+    def prepare(queue):
         """Configures the wall profile."""
 
         # Get the logger for the wall profile
@@ -401,7 +404,8 @@ class WallBuilderSimulator(WallBuilderAbc):
         if not all(isinstance(heights, list) for heights in self.config_list):
             raise ValueError('All elements of config_list must be lists')
 
-    def configure(self):
+    @staticmethod
+    def prepare(queue):
 
         # Set the name of the current process
         current_process().name = 'Manager'
@@ -410,7 +414,7 @@ class WallBuilderSimulator(WallBuilderAbc):
         log = logging.getLogger()
 
         # Create a QueueHandler to send log messages to a queue
-        handler = logging.handlers.QueueHandler(self.log_queue)
+        handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
         log.addHandler(handler)
@@ -429,7 +433,7 @@ class WallBuilderSimulator(WallBuilderAbc):
             days = -(-TARGET_HEIGHT // BUILD_RATE)
 
         # Configure the wall builder to log to the queue
-        self.configure()
+        self.prepare(self.log_queue)
 
         # Parse the sections from the confoguration list
         self.parse_config()
@@ -437,7 +441,7 @@ class WallBuilderSimulator(WallBuilderAbc):
         # Create a pool of workers
         pool = Pool(
             processes=num_teams,
-            initializer=WallSection.configure,
+            initializer=WallSection.prepare,
             initargs=(self.log_queue,),
         )
 
