@@ -1,6 +1,7 @@
 from multiprocessing import Process, Pool, Queue, current_process
 from abc import ABC, abstractmethod
 from rootdir import ROOT_DIR
+from builder.errors import *
 
 import logging
 import logging.handlers
@@ -206,33 +207,45 @@ class WallSection(WallBuilderAbc):
 
         # Check the type of the start height
         if not isinstance(self.start_height, int):
-            raise TypeError('The start height must be an integer')
+            raise BuilderValidationError(
+                info='The start height must be an integer'
+            )
 
         # Check that the start height is between 0 and the target height
         if not 0 <= self.start_height <= TARGET_HEIGHT:
-            raise ValueError('The start height must be between 0 and 30')
+            raise BuilderValidationError(
+                info='The start height must be between 0 and 30'
+            )
 
         # ----------------------------------------------------------------------
         # Validate section_id
 
         # Check the type of section_id
         if not isinstance(self.section_id, int):
-            raise TypeError('The section_id must be an integer')
+            raise BuilderValidationError(
+                info='The section_id must be an integer'
+            )
 
         # Check that the section_id is positive
         if not self.section_id >= 0:
-            raise ValueError('The section_id must be a positive integer')
+            raise BuilderValidationError(
+                info='The section_id must be a positive integer'
+            )
 
         # ----------------------------------------------------------------------
         # Validate profile_id
 
         # Check the type of profile_id
         if not isinstance(self.profile_id, (int, type(None))):
-            raise TypeError('The profile_id must be an integer')
+            raise BuilderValidationError(
+                info='The profile_id must be an integer'
+            )
 
         # Check that the profile_id is positive
         if not self.profile_id >= 0:
-            raise ValueError('The profile_id must be a positive integer')
+            raise BuilderValidationError(
+                info='The profile_id must be a positive integer'
+            )
 
     @staticmethod
     def prepare(queue):
@@ -347,26 +360,36 @@ class WallProfile(WallBuilderAbc):
 
         # Check the type of profile_id
         if not isinstance(self.profile_id, int):
-            raise TypeError('The profile_id must be an integer')
+            raise BuilderValidationError(
+                info='The profile_id must be an integer'
+            )
 
         # Check that the profile_id is positive
         if not self.profile_id >= 0:
-            raise ValueError('The profile_id must be a positive integer')
+            raise BuilderValidationError(
+                info='The profile_id must be a positive integer'
+            )
 
         # ----------------------------------------------------------------------
         # Validate sections
 
         # Check that sections is a list
         if not isinstance(self.sections, list):
-            raise TypeError('The sections must be a list')
+            raise BuilderValidationError(
+                info='The sections must be a list'
+            )
 
         # Check that all section elements are WallSection objects
         if not all(isinstance(section, WallSection) for section in self.sections):
-            raise ValueError('All sections must be WallSection objects')
+            raise BuilderValidationError(
+                info='All sections must be WallSection objects'
+            )
 
         # Check that the section size is between 1 and 2000
         if not 1 <= len(self.sections) <= MAX_SECTION_COUNT:
-            raise MemoryError('The sections count must be between 1 and 2000')
+            raise BuilderValidationError(
+                info='The sections count must be between 1 and 2000'
+            )
 
     @staticmethod
     def prepare(queue):
@@ -520,11 +543,15 @@ class WallManager(WallBuilderAbc):
 
         # Check that config_list is a list
         if not isinstance(self.config_list, list):
-            raise TypeError('The config_list must be a list')
+            raise BuilderValidationError(
+                info='The config_list must be a list'
+            )
 
         # Check that all elements of config_list are lists
         if not all(isinstance(heights, list) for heights in self.config_list):
-            raise ValueError('All elements of config_list must be lists')
+            raise BuilderValidationError(
+                info='All elements of config_list must be lists'
+            )
 
     @staticmethod
     def prepare(queue):
