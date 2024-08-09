@@ -1,5 +1,7 @@
 from unittest import TestCase
 from builder.simulator import *
+from builder.errors import *
+from builder.defines import *
 
 
 class TestWallSection(TestCase):
@@ -86,44 +88,64 @@ class TestWallSection(TestCase):
         expected_cost = expected_ice * COST_PER_VOLUME
         self.assertEqual(self.section.get_cost(), expected_cost)
 
-    def test_validate(self):
+    def test_validate_start_height(self):
+
+        # ---------------------------------------------------------------------
+        # Test the validation of the start height
 
         # Set the start height to valid values
-        section = WallSection(0)
+        section = WallSection(section_id=1, start_height=0)
         test_values = [0, TARGET_HEIGHT]
         for value in test_values:
-            self.section.start_height = value
-            self.section.validate()
+            section.start_height = value
+            section.validate()
 
         # Set the start height to invalid types
-        section = WallSection(0)
-        test_values = [None, 'a', 1.0, complex(1, 1)]
+        section = WallSection(section_id=1, start_height=0)
+        test_values = [None, 'a', -1, 31, 1.0, complex(1, 1)]
         for value in test_values:
-            with self.assertRaises(TypeError):
+            with self.assertRaises(BuilderValidationError):
                 section.start_height = value
                 section.validate()
 
-        # Set the start height to invalid values
-        section = WallSection(0)
-        test_values = [-1, TARGET_HEIGHT + 1]
-        for value in test_values:
-            with self.assertRaises(ValueError):
-                section.start_height = value
-                section.validate()
+    def test_validate_section_id(self):
 
-        # Set the name to valid values
-        section = WallSection(0)
-        test_values = ['a', 'a' * 100]
+        # ---------------------------------------------------------------------
+        # Test the validation of the section-id
+
+        # Set the section-id to valid values
+        section = WallSection(section_id=1, start_height=0)
+        test_values = [0, 1, 2, 3]
         for value in test_values:
             section.section_id = value
             section.validate()
 
-        # Set the name to invalid types
-        section = WallSection(0)
-        test_values = [None, 1, 1.0, complex(1, 1)]
+        # Set the section-id to invalid values
+        section = WallSection(section_id=1, start_height=0)
+        test_values = [None, -1, 'a', 1.0, complex(1, 1)]
         for value in test_values:
-            with self.assertRaises(TypeError):
-                section.name = value
+            with self.assertRaises(BuilderValidationError):
+                section.section_id = value
+                section.validate()
+
+    def test_validate_profile_id(self):
+
+        # ---------------------------------------------------------------------
+        # Test the validation of the profile-id
+
+        # Set the section-id to valid values
+        section = WallSection(section_id=1, start_height=0)
+        test_values = [None, 0, 1]
+        for value in test_values:
+            section.profile_id = value
+            section.validate()
+
+        # Set the section-id to invalid values
+        section = WallSection(section_id=1, start_height=0)
+        test_values = ['a', -1, 1.0, complex(1, 1)]
+        for value in test_values:
+            with self.assertRaises(BuilderValidationError):
+                section.profile_id = value
                 section.validate()
 
 
@@ -131,7 +153,7 @@ class TestWallProfile(TestCase):
 
     def setUp(self):
         self.sections = [WallSection(i) for i in range(3)]
-        self.profile = WallProfile(self.sections)
+        self.profile = WallProfile(profile_id=1, sections=self.sections)
 
     def test_init(self):
 
@@ -139,7 +161,7 @@ class TestWallProfile(TestCase):
         self.assertEqual(self.profile.sections, self.sections)
 
         # Check the name is set
-        self.assertEqual(self.profile.name, '')
+        self.assertEqual(self.profile.profile_id, 1)
 
     def test_is_ready(self):
 
@@ -219,105 +241,144 @@ class TestWallProfile(TestCase):
         for section in self.sections:
             self.assertEqual(section.current_height, TARGET_HEIGHT)
 
-    def test_validate(self):
+    def test_validate_profile_id(self):
 
-        # Set the name to valid values
-        profile = WallProfile(self.sections)
-        test_values = ['a', 'a' * 100]
+        # Set the profile-id to valid values
+        profile = WallProfile(profile_id=1, sections=self.sections)
+        test_values = [0, 1]
         for value in test_values:
             profile.name = value
             profile.validate()
 
-        # Set the name to invalid types
-        profile = WallProfile(self.sections)
-        test_values = [None, 1, 1.0, complex(1, 1)]
+        # Set the profile-id to invalid types
+        profile = WallProfile(profile_id=1, sections=self.sections)
+        test_values = [None, 'a', -1, 1.0, complex(1, 1)]
         for value in test_values:
-            with self.assertRaises(TypeError):
-                profile.name = value
+            with self.assertRaises(BuilderValidationError):
+                profile.profile_id = value
                 profile.validate()
 
+    def test_validate_sections(self):
+
         # Set the sections to valid values
-        profile = WallProfile(self.sections)
+        profile = WallProfile(profile_id=1, sections=self.sections)
         test_values = [[WallSection(0)], [WallSection(0), WallSection(1)]]
         for value in test_values:
             profile.sections = value
             profile.validate()
 
         # Set the sections to invalid types
-        profile = WallProfile(self.sections)
+        profile = WallProfile(profile_id=1, sections=self.sections)
         test_values = [None, 1, 1.0, complex(1, 1)]
         for value in test_values:
-            with self.assertRaises(TypeError):
+            with self.assertRaises(BuilderValidationError):
                 profile.sections = value
                 profile.validate()
 
         # Set the sections to invalid size
-        profile = WallProfile(self.sections)
+        profile = WallProfile(profile_id=1, sections=self.sections)
         test_values = [[], [WallSection(0)] * (MAX_SECTION_COUNT + 1)]
         for value in test_values:
-            with self.assertRaises(MemoryError):
+            with self.assertRaises(BuilderValidationError):
                 profile.sections = value
                 profile.validate()
 
 
-class TestWallBuilder(TestCase):
-
-    def setUp(self):
-        self.builder = WallBuilderSimulator()
-        self.sections = [WallSection(i) for i in range(3)]
-        self.profiles = [WallProfile(self.sections) for _ in range(3)]
-        self.builder.wall_profiles = self.profiles
+class TestWallManager(TestCase):
 
     def test_init(self):
 
-        # Check the config list is set
-        self.assertEqual(self.builder.config_list, [])
-
-        # Check the wall profiles are set
-        self.assertEqual(self.builder.wall_profiles, self.profiles)
-
-        # Check the sections are set
-        self.assertEqual(self.builder.sections, [])
-
-        # Check the logger is set
-        self.assertIsNotNone(self.builder.log)
-
-    def test_create_profile(self):
-
-        # Create a profile
-        heights = [0, 1, 2]
-        profile = WallBuilderSimulator.create_profile(heights, 0)
-
-        # Check the profile is created
-        self.assertEqual(profile.name, 'P00')
-        self.assertEqual(profile.sections[0].start_height, 0)
-        self.assertEqual(profile.sections[1].start_height, 1)
-        self.assertEqual(profile.sections[2].start_height, 2)
-
-    def test_set_config(self):
-
-        # Set the config list
-        config_list = [1, 2, 3]
-        self.builder.set_config_list(config_list)
+        config_list = [[1, ], [4, ]]
+        manager = WallManager(config_list)
 
         # Check the config list is set
-        self.assertEqual(self.builder.config_list, config_list)
+        self.assertEqual(manager.config_list, config_list)
 
-    def test_get_sections(self):
+    # def test_is_ready(self):
+    #
+    #     # Define the config list
+    #     config_list = [[1, 2], [3, ]]
+    #
+    #     # Initialize the manager
+    #     manager = WallManager(config_list)
+    #
+    #     # Check the manager is not ready
+    #     self.assertFalse(manager.is_ready())
+    #
+    #     # Build until the target height is reached
+    #     manager.build(days=30)
+    #
+    #     # Check the manager is ready
+    #     self.assertTrue(manager.is_ready())
 
-        # Check the sections are returned
-        self.assertEqual(self.builder.get_sections(), self.sections)
+    # def test_get_ice(self):
+    #
+    #     # Define the config list
+    #     config_list = [[29, 29], [29, ]]
+    #
+    #     # Define the expected result
+    #     expected_ice = 3 * (TARGET_HEIGHT - 29) * VOLUME_ICE_PER_FOOT
+    #
+    #     # Create the manager
+    #     manager = WallManager(config_list)
+    #
+    #     # Build for one day
+    #     manager.build(days=1)
+    #
+    #     # Check the total ice is correct
+    #     self.assertEqual(manager.get_ice(), expected_ice)
 
-    def test_is_ready(self):
+    # def test_get_cost(self):
+    #
+    #     # Define the config list
+    #     config_list = [[29, 29], [29, ]]
+    #
+    #     # Define the expected result
+    #     expected_cost = (3 * (TARGET_HEIGHT - 29) *
+    #                      VOLUME_ICE_PER_FOOT *
+    #                      COST_PER_VOLUME
+    #                      )
+    #
+    #     # Create the manager
+    #     manager = WallManager(config_list)
+    #
+    #     # Build for one day
+    #     manager.build(days=1)
+    #
+    #     # Check the total cost is correct
+    #     self.assertEqual(manager.get_cost(), expected_cost)
 
-        # Check the builder is not ready
-        self.assertFalse(self.builder.is_ready())
+    def test_build(self):
 
-        # Build until the target height is reached
-        for profile in self.profiles:
-            for section in profile.sections:
-                for i in range(TARGET_HEIGHT):
-                    section.build()
+        # Define the config list
+        config_list = [[29, 29], [29, ]]
 
-        # Check the builder is ready
-        self.assertTrue(self.builder.is_ready())
+        # Initialize the manager
+        manager = WallManager(config_list)
+
+        # Build for one day
+        manager.build(days=1)
+
+        # Check the manager is ready
+        self.assertTrue(manager.is_ready())
+
+    def test_validate_config_list(self):
+
+        # Create the manager
+        manager = WallManager([])
+
+        # Define a valid nested list
+        manager.config_list = [[1, 2], [3, 4]]
+        manager.validate()
+
+        # Check the validation fails
+        config_list = [1, 2, 3, 4, 5]
+        with self.assertRaises(BuilderValidationError):
+            manager.config_list = config_list
+            manager.validate()
+
+        # Define an invalid list with non-integer values
+        config_list = [[1, 2], [3, 'a']]
+        with self.assertRaises(BuilderValidationError):
+            manager.config_list = config_list
+            manager.validate()

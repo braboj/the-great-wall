@@ -1,3 +1,4 @@
+# encoding: utf-8
 class BuilderError(Exception):
     """ Base class for exceptions related to building processes.
 
@@ -30,8 +31,12 @@ class BuilderValidationError(BuilderError):
         super().__init__(message, info)
 
 
-if __name__ == "__main__":
+def main():
     try:
-        raise BuilderValidationError(info="Invalid parameter")
-    except BuilderValidationError as e:
+        raise BuilderError("An error occurred")
+    except BuilderError as e:
         print(str(e))
+
+
+if __name__ == "__main__":
+    main()

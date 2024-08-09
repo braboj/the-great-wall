@@ -1,7 +1,9 @@
-from multiprocessing import Process, Pool, Queue, current_process
+# encoding: utf-8
+from multiprocessing import Process, Pool, Queue, current_process, JoinableQueue
 from abc import ABC, abstractmethod
 from rootdir import ROOT_DIR
 from builder.errors import *
+from builder.defines import *
 
 import logging
 import logging.handlers
@@ -11,13 +13,6 @@ import math
 
 # Constants
 LOG_FILE = os.path.join(ROOT_DIR, 'data', 'wall_progress.log')
-VOLUME_ICE_PER_FOOT = 195   # Material consumption per foot
-COST_PER_VOLUME = 1900      # Cost of material per volume
-TARGET_HEIGHT = 30          # Fixed height of the wall
-SIMULATION_TIME = 0.01      # Simulated CPU work
-MAX_SECTION_COUNT = 2000    # Maximum number of sections
-MAX_WORKERS = 20            # Maximum number of workers
-BUILD_RATE = 1              # Feet per day
 
 
 class LogListener(Process):
@@ -75,6 +70,14 @@ class LogListener(Process):
         # Add the handlers to the root logger
         self.root_log.addHandler(file_handler)
         self.root_log.addHandler(console_handler)
+
+    def stop(self):
+        """Stop the log listener process."""
+
+        # Stop the listener process using the sentinel message
+        self.queue.put(None)
+
+        self.join()
 
     def run(self):
         """Process that listens for log messages on the queue."""
@@ -164,7 +167,23 @@ class WallSection(WallBuilderAbc):
         self.profile_id = profile_id
         self.start_height = start_height
         self.current_height = start_height
-        self.log = logging.getLogger(__name__)
+
+        # Set the logger for the wall builder
+        self.log = logging.getLogger()
+        self.log.addHandler(logging.NullHandler())
+
+    def __eq__(self, other):
+        """Check if two wall sections are equal."""
+        return all([
+            self.section_id == other.section_id,
+            self.profile_id == other.profile_id,
+            self.start_height == other.start_height,
+            self.current_height == other.current_height
+        ])
+
+    def __ne__(self, other):
+        """Check if two wall sections are not equal."""
+        return not self == other
 
     def __repr__(self):
         """Returns a string representation of the wall section."""
@@ -227,7 +246,7 @@ class WallSection(WallBuilderAbc):
             )
 
         # Check that the section_id is positive
-        if not self.section_id >= 0:
+        if self.section_id < 0:
             raise BuilderValidationError(
                 info='The section_id must be a positive integer'
             )
@@ -242,7 +261,7 @@ class WallSection(WallBuilderAbc):
             )
 
         # Check that the profile_id is positive
-        if not self.profile_id >= 0:
+        if self.profile_id is not None and self.profile_id < 0:
             raise BuilderValidationError(
                 info='The profile_id must be a positive integer'
             )
@@ -323,7 +342,21 @@ class WallProfile(WallBuilderAbc):
         # Set the instance attributes
         self.profile_id = profile_id
         self.sections = sections or []
-        self.log = logging.getLogger(__name__)
+
+        # Set the logger for the wall builder
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.log.addHandler(logging.NullHandler())
+
+    def __eq__(self, other):
+        """Check if two wall profiles are equal."""
+        return all([
+            self.profile_id == other.profile_id,
+            self.sections == other.sections
+        ])
+
+    def __ne__(self, other):
+        """Check if two wall profiles are not equal."""
+        return not self == other
 
     def __repr__(self):
         """Returns a string representation of the wall profile."""
@@ -331,13 +364,20 @@ class WallProfile(WallBuilderAbc):
         return (f"WallProfile(profile_id={self.profile_id}, "
                 f"ice={self.get_ice()}, "
                 f"cost={self.get_cost()}, "
-                f"ready={self.is_ready()}, "
+                f"ready={self.is_ready()}"
                 f")"
                 )
 
     def is_ready(self):
         """Returns True if the wall profile is ready to be constructed."""
-        return all(section.is_ready() for section in self.sections)
+
+        # Check if there are any sections
+        if not self.sections:
+            return False
+
+        # Check if all sections are ready
+        else:
+            return all(section.is_ready() for section in self.sections)
 
     def get_ice(self):
         """Returns the total ice consumed by the wall profile."""
@@ -455,17 +495,22 @@ class WallManager(WallBuilderAbc):
         """
 
         # Set the instance attributes
-        self.config_list = config_list
+        self.config_list = list(config_list)
         self.profiles = []
         self.sections = []
 
         # Set the logger for the wall builder
         self.log = logging.getLogger()
+        self.log.addHandler(logging.NullHandler())
+
+        # Create the log queue to receive log messages
         self.log_queue = Queue()
 
-        # Create and start the log listener process
-        self.log_listener = LogListener(self.log_queue)
-        self.log_listener.start()
+        # Create the log listener process
+        # self.log_listener = LogListener(self.log_queue)
+
+        # Parse the configuration list
+        self.parse_config_list()
 
     def report(self, start_time, end_time):
         self.log.info('-' * 80)
@@ -475,7 +520,7 @@ class WallManager(WallBuilderAbc):
         self.log.info(f"Calculation time: {end_time - start_time:.2f} seconds")
         self.log.info('-' * 80)
 
-    def parse_config(self):
+    def parse_config_list(self):
         """Parse the configuration list to create wall sections.
 
         This method parses the configuration list to create wall sections. It
@@ -521,9 +566,46 @@ class WallManager(WallBuilderAbc):
             )
             profile.sections = profile_sections
 
+    def get_profile(self, profile_id):
+        """Get a profile by its ID.
+
+        This method returns a wall profile by its ID.
+
+        Args:
+            profile_id (int): The profile ID of the wall profile.
+
+        Returns:
+            WallProfile: The wall profile with the specified ID.
+        """
+
+        return next(profile for profile in self.profiles
+                    if profile.profile_id == profile_id)
+
+    def get_section(self, section_id):
+        """Get a section by its ID.
+
+        This method returns a wall section by its ID.
+
+        Args:
+            section_id (int): The section ID of the wall section.
+
+        Returns:
+            WallSection: The wall section with the specified ID.
+        """
+
+        return next(section for section in self.sections
+                    if section.section_id == section_id)
+
     def is_ready(self):
         """Check if all wall sections are ready."""
-        return all(section.is_ready() for section in self.sections)
+
+        # Check if there are any sections
+        if not self.sections:
+            return False
+
+        # Check if all sections are ready
+        else:
+            return all(section.is_ready() for section in self.sections)
 
     def get_ice(self):
         """Get the total ice consumed by the wall."""
@@ -548,10 +630,18 @@ class WallManager(WallBuilderAbc):
             )
 
         # Check that all elements of config_list are lists
-        if not all(isinstance(heights, list) for heights in self.config_list):
+        if not all(isinstance(element, list) for element in self.config_list):
             raise BuilderValidationError(
                 info='All elements of config_list must be lists'
             )
+
+        # Check that all elements of config_list are integers
+        for i, profiles in enumerate(self.config_list):
+            for j, section_height in enumerate(profiles):
+                if not isinstance(section_height, int):
+                    raise BuilderValidationError(
+                        info=f'Element at index [{i}][{j}] is not an integer.'
+                    )
 
     @staticmethod
     def prepare(queue):
@@ -578,7 +668,7 @@ class WallManager(WallBuilderAbc):
         log.addHandler(handler)
 
         # Set the log level for the root logger
-        log.setLevel(logging.DEBUG)
+        log.setLevel(logging.INFO)
 
     def build(self, days=None, num_teams=None):
         """Build the wall using a pool of workers.
@@ -596,6 +686,14 @@ class WallManager(WallBuilderAbc):
             WallManager: The updated wall builder instance.
         """
 
+        log_listener = LogListener(self.log_queue)
+
+        # Start the log listener process
+        log_listener.start()
+
+        # Configure the wall builder to log to the queue
+        self.prepare(self.log_queue)
+
         # Check if construction teams are specified
         if num_teams is None:
             num_teams = len(self.sections)
@@ -603,12 +701,6 @@ class WallManager(WallBuilderAbc):
         # Calculate the days and roundup to the nearest integer
         if days is None:
             days = math.ceil(TARGET_HEIGHT / BUILD_RATE)
-
-        # Configure the wall builder to log to the queue
-        self.prepare(self.log_queue)
-
-        # Parse the sections from the configuration list
-        self.parse_config()
 
         # Create a pool of workers
         pool = Pool(
@@ -632,21 +724,21 @@ class WallManager(WallBuilderAbc):
             # Map a section from a profile to a worker
             self.sections = pool.map(WallSection.build, self.sections)
 
-        # End the timer
-        end_time = time.time()
-
-        # Close the pool of workers
+        # No more work to be done
         pool.close()
         pool.join()
 
-        # Update the profiles
-        self.update_profiles()
+        # End the timer
+        end_time = time.time()
 
         # Log the results
         self.report(start_time=start_time, end_time=end_time)
 
-        # Stop the listener process using the sentinel message
-        self.log_queue.put(None)
+        # Update the profiles
+        self.update_profiles()
+
+        # Stop the listener process
+        log_listener.stop()
 
         # Return the updated wall builder
         return self
@@ -668,11 +760,13 @@ def main():
 
     # Create a wall builder
     builder = WallManager(config_list)
-    builder.build(num_teams=20, days=30)
+    builder.build(num_teams=20, days=1)
+    # builder.build(num_teams=20, days=1)
+    # builder.build(num_teams=20, days=1)
 
     # Profile 1
-    profile = builder.profiles[0]
-    print(profile.get_ice())
+    # profile = builder.profiles[0]
+    # print(profile)
 
 
 if __name__ == "__main__":
