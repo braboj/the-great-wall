@@ -89,42 +89,42 @@ class TestWallSection(TestCase):
     def test_validate(self):
 
         # Set the start height to valid values
-        self.section.start_height = 0
+        section = WallSection(0)
         test_values = [0, TARGET_HEIGHT]
         for value in test_values:
             self.section.start_height = value
             self.section.validate()
 
         # Set the start height to invalid types
-        self.section.start_height = 0
+        section = WallSection(0)
         test_values = [None, 'a', 1.0, complex(1, 1)]
         for value in test_values:
             with self.assertRaises(TypeError):
-                self.section.start_height = value
-                self.section.validate()
+                section.start_height = value
+                section.validate()
 
         # Set the start height to invalid values
-        self.section.start_height = 0
+        section = WallSection(0)
         test_values = [-1, TARGET_HEIGHT + 1]
         for value in test_values:
             with self.assertRaises(ValueError):
-                self.section.start_height = value
-                self.section.validate()
+                section.start_height = value
+                section.validate()
 
         # Set the name to valid values
-        self.section.start_height = 0
+        section = WallSection(0)
         test_values = ['a', 'a' * 100]
         for value in test_values:
-            self.section.name = value
-            self.section.validate()
+            section.section_id = value
+            section.validate()
 
         # Set the name to invalid types
-        self.section.start_height = 0
+        section = WallSection(0)
         test_values = [None, 1, 1.0, complex(1, 1)]
         for value in test_values:
             with self.assertRaises(TypeError):
-                self.section.name = value
-                self.section.validate()
+                section.name = value
+                section.validate()
 
 
 class TestWallProfile(TestCase):
