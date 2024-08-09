@@ -8,7 +8,7 @@ def home(request):
     return HttpResponse('Hello, World!')
 
 
-def total_cost(request):
+def overview_fetch(request):
 
     config_list = apps.get_app_config("tracker").config_list
     num_teams = apps.get_app_config("tracker").num_teams
@@ -32,7 +32,7 @@ def total_cost(request):
         return JsonResponse(data)
 
 
-def daily_cost(request, day_id):
+def overview_day_fetch(request, day_id):
 
     config_list = apps.get_app_config("tracker").config_list
     num_teams = apps.get_app_config("tracker").num_teams
@@ -55,7 +55,7 @@ def daily_cost(request, day_id):
         return JsonResponse(data)
 
 
-def daily_profile_cost(request, profile_id, day_id):
+def overview_profile_day_fetch(request, profile_id, day_id):
 
     config_list = apps.get_app_config("tracker").config_list
     num_teams = apps.get_app_config("tracker").num_teams
@@ -81,7 +81,7 @@ def daily_profile_cost(request, profile_id, day_id):
         return JsonResponse(data)
 
 
-def profile_daily_details(request, profile_id, day_id):
+def daily_profile_status_fetch(request, profile_id, day_id):
 
     config_list = apps.get_app_config("tracker").config_list
     num_teams = apps.get_app_config("tracker").num_teams
