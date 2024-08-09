@@ -203,6 +203,12 @@ class WallBuilder(object):
         self.sections = []
         self.log = logging.getLogger()
 
+    def add_profile(self, profile):
+        self.wall_profiles.append(profile)
+
+    def remove_profile(self, profile):
+        self.wall_profiles.remove(profile)
+
     @staticmethod
     def create_profile(heights, profile_id):
         sections = [WallSection(start_height) for start_height in heights]

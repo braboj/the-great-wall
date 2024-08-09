@@ -27,6 +27,21 @@ def test_profile():
     print(f'TOTAL COST: {profile.get_cost()}')
 
 
+def test_wall_builder():
+
+    # Define the wall configuration
+    config_list = [
+        [29, ] * 10,
+        [29, ] * 10,
+    ]
+
+    # Create a wall builder
+    builder = WallBuilder()
+    builder.set_config(config_list)
+    builder.build(max_teams=20, days=1)
+
+
 if __name__ == "__main__":
     # test_section()
-    test_profile()
+    # test_profile()
+    test_wall_builder()
