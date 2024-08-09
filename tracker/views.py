@@ -1,46 +1,108 @@
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-
+from builder.simulator import *
+from django.apps import apps
 
 def home(request):
     return HttpResponse('Hello, World!')
 
 
 def total_cost(request):
-    data = {
-        'day': None,
-        'total_cost': 0
-    }
 
-    return JsonResponse(data)
+    config_list = apps.get_app_config("tracker").config_list
+    num_teams = apps.get_app_config("tracker").num_teams
 
+    try:
+        builder = WallBuilderSimulator()
+        builder.set_config_list(config_list)
+        builder.build(num_teams=num_teams, days=30)
 
-def total_daily_cost(request, day):
-    data = {
-        'day': day,
-        'total_cost': 0
-    }
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)})
 
-    return JsonResponse(data)
+    else:
 
+        data = {
+            'day': None,
+            'cost': builder.get_cost()
+        }
 
-def total_daily_profile_cost(request, profile, day):
-    data = {
-        'profile': profile,
-        'day': day,
-        'total_cost': 0
-    }
-
-    return JsonResponse(data)
+        return JsonResponse(data)
 
 
-def profile_day_detail(request, profile, day):
-    # Prepare the data to be returned in the response
-    data = {
-        'profile': profile,
-        'day': day,
-        'details': ''
-    }
+def daily_cost(request, day_id):
 
-    return JsonResponse(data)
+    config_list = apps.get_app_config("tracker").config_list
+    num_teams = apps.get_app_config("tracker").num_teams
+
+    try:
+        builder = WallBuilderSimulator()
+        builder.set_config_list(config_list)
+        builder.build(num_teams=num_teams, days=day_id)
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)})
+
+    else:
+        data = {
+            'day': day_id,
+            'cost': builder.get_cost()
+        }
+
+        return JsonResponse(data)
+
+
+def daily_profile_cost(request, profile_id, day_id):
+
+    config_list = apps.get_app_config("tracker").config_list
+    num_teams = apps.get_app_config("tracker").num_teams
+
+    try:
+        builder = WallBuilderSimulator()
+        builder.set_config_list(config_list)
+        builder.build(num_teams=num_teams, days=day_id)
+
+        profile = builder.wall_profiles[profile_id-1]
+        profile.build(days=day_id)
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)})
+
+    else:
+        data = {
+            'day': day_id,
+            'cost': profile.get_cost()
+        }
+
+        return JsonResponse(data)
+
+
+def profile_daily_details(request, profile_id, day_id):
+
+    config_list = apps.get_app_config("tracker").config_list
+    num_teams = apps.get_app_config("tracker").num_teams
+
+    try:
+        builder = WallBuilderSimulator()
+        builder.set_config_list(config_list)
+        builder.build(num_teams=num_teams, days=day_id)
+
+        profile = builder.wall_profiles[profile_id-1]
+        profile.build(days=day_id)
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': str(e)})
+
+    else:
+
+        data = {
+            'day': day_id,
+            'ice': profile.get_ice()
+        }
+
+        return JsonResponse(data)

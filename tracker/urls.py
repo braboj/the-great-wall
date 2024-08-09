@@ -21,9 +21,11 @@ from tracker import views
 
 urlpatterns = [
     path('overview/', views.total_cost, name='total_cost'),
-    path('overview/<int:day>/', views.total_daily_cost, name='profile_detail'),
-    path('<int:profile>/overview/<int:day>/', views.total_daily_profile_cost, name='profile_day_detail'),
-    path('<int:profile>/days/<int:day>/', views.profile_day_detail, name='profile_day_detail'),
+    path('overview/<int:day_id>/', views.daily_cost, name='daily_cost'),
+    path('<int:profile_id>/overview/<int:day_id>/', views.daily_profile_cost,
+         name='daily_profile_cost'),
+    path('<int:profile_id>/days/<int:day_id>/', views.profile_daily_details,
+         name='profile_day_detail'),
 ]
 
 
