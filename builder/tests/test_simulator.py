@@ -298,7 +298,7 @@ class TestWallBuilder(TestCase):
 
         # Set the config list
         config_list = [1, 2, 3]
-        self.builder.set_config(config_list)
+        self.builder.set_config_list(config_list)
 
         # Check the config list is set
         self.assertEqual(self.builder.config_list, config_list)

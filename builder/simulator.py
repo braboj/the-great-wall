@@ -3,6 +3,8 @@ import logging.handlers
 import time
 from multiprocessing import Process, Pool, Queue, current_process
 from abc import ABC, abstractmethod
+from rootdir import ROOT_DIR
+import os
 
 # Constants
 VOLUME_ICE_PER_FOOT = 195   # Material consumption per foot
@@ -10,6 +12,8 @@ COST_PER_VOLUME = 1900      # Cost of material per volume
 TARGET_HEIGHT = 30          # Fixed height of the wall
 SIMULATION_TIME = 0.01      # Simulated CPU work
 MAX_SECTION_COUNT = 2000    # Maximum number of sections
+MAX_WORKERS = 20            # Maximum number of workers
+LOG_FILE = os.path.join(ROOT_DIR, 'data', 'wall_progress.log')
 
 
 class LogListener(Process):
@@ -20,7 +24,7 @@ class LogListener(Process):
         root (Logger): The root logger.
     """
 
-    def __init__(self, queue):
+    def __init__(self, queue, logfile=LOG_FILE):
         """Initializes the log listener process.
 
         Args:
@@ -32,6 +36,9 @@ class LogListener(Process):
 
         # Set the queue to receive log messages
         self.queue = queue
+
+        # Set the log file name
+        self.logfile = logfile
 
         # Get the root logger
         self.root = logging.getLogger()
@@ -48,8 +55,10 @@ class LogListener(Process):
         console_handler = logging.StreamHandler()
 
         # Add a file handler to the root logger
-        file_handler = logging.FileHandler(filename='../tracker/pool_logging.log',
-                                           mode='w')
+        file_handler = logging.FileHandler(
+            filename=self.logfile,
+            mode='w'
+        )
 
         # Apply the message format to the handler
         file_handler.setFormatter(formatter)
@@ -233,7 +242,8 @@ class WallProfile(WallBuilderAbc):
         return (f"WallProfile(full_name={self.name}, "
                 f"ice={self.get_ice()}, "
                 f"cost={self.get_cost()}, "
-                f"ready={self.is_ready()}"
+                f"ready={self.is_ready()}, "
+                f"sections={self.sections}"
                 f")"
                 )
 
@@ -282,13 +292,15 @@ class WallProfile(WallBuilderAbc):
         # Set the log level for the root logger
         log.setLevel(logging.DEBUG)
 
-    def build(self):
+    def build(self, days=1):
         """Builds the wall profile section by section."""
 
-        # Build each section
-        for section in self.sections:
-            if not section.is_ready():
-                section.build()
+        for day in range(days):
+
+            # Build each section
+            for section in self.sections:
+                if not section.is_ready():
+                    section.build()
 
         # Return the updated wall profile
         return self
@@ -305,13 +317,15 @@ class WallBuilderSimulator(WallBuilderAbc):
         self.wall_profiles = []
         self.sections = []
         self.log = logging.getLogger()
+        self.queue = Queue()
 
-    def report(self, start_time, end_time):
-        self.log.info('-' * 80)
-        self.log.info(f'TOTAL ICE : {self.get_ice()}')
-        self.log.info(f'TOTAL COST: {self.get_cost()}')
-        self.log.info('-' * 80)
-        self.log.info(f"Calculation time: {end_time - start_time:.2f} seconds")
+    def add_profile(self, profile):
+        """Adds a wall profile to the wall builder."""
+        self.wall_profiles.append(profile)
+
+    def remove_profile(self, profile):
+        """Removes a wall profile from the wall builder."""
+        self.wall_profiles.remove(profile)
 
     @staticmethod
     def create_profile(heights, profile_id):
@@ -323,11 +337,26 @@ class WallBuilderSimulator(WallBuilderAbc):
         # Return the wall profile
         return WallProfile(sections=sections, name=f"P{profile_id:02d}")
 
-    def set_config(self, config_list):
-        """Sets the configuration for the wall builder."""
+    def get_profile(self, profile_id):
+        """Returns the wall profile with the specified ID."""
+        return self.wall_profiles[profile_id]
+
+    def get_config_list(self):
+        """Returns the configuration list for the wall builder."""
+        return self.config_list
+
+    def set_config_list(self, config_list):
+        """Sets the configuration list for the wall builder."""
 
         # Set the configuration list
         self.config_list = config_list
+
+        # Create the wall profiles from the configuration list
+        self.wall_profiles = [
+            self.create_profile(heights, index) for
+            index, heights in enumerate(self.config_list)
+        ]
+
 
     def get_sections(self):
         """Returns a list of wall sections from the wall profiles."""
@@ -345,6 +374,18 @@ class WallBuilderSimulator(WallBuilderAbc):
 
         # Return the list of wall sections
         return sections
+
+    def set_sections(self, sections):
+        """Sets the wall sections for the wall builder."""
+        self.sections = sections
+
+    def report(self, start_time, end_time):
+        self.log.info('-' * 80)
+        self.log.info(f'TOTAL ICE : {self.get_ice()}')
+        self.log.info(f'TOTAL COST: {self.get_cost()}')
+        self.log.info('-' * 80)
+        self.log.info(f"Calculation time: {end_time - start_time:.2f} seconds")
+        self.log.info('-' * 80)
 
     def is_ready(self):
         """Check if all wall sections are ready."""
@@ -386,11 +427,47 @@ class WallBuilderSimulator(WallBuilderAbc):
         # Set the log level for the root logger
         log.setLevel(logging.DEBUG)
 
-    def build(self, max_teams=None, days=None):
+    def build_profile(self, profile_id, days=1):
+
+        # Get the wall profile
+        profile = self.get_profile(profile_id)
+
+        # Build the wall profile
+        sections = profile.sections
+
+        # Create a pool of workers
+        pool = Pool(
+            processes=MAX_WORKERS,
+            initializer=WallSection.configure,
+            initargs=(self.queue,),
+        )
+
+        for day in range(days):
+
+            # Check if all sections are ready
+            if profile.is_ready():
+                break
+
+            self.log.info(f"@ Calculation Distribution Day {day + 1}")
+
+            # Map a section from a profile to a worker
+            sections = pool.map(WallSection.build, sections)
+
+        # Close the pool of workers
+        pool.close()
+        pool.join()
+
+        # Stop the listener process using the sentinel
+        self.queue.put(None)
+
+        # Return the updated wall builder
+        return self
+
+    def build(self, days=None, num_teams=None):
 
         # Check if construction teams are specified
-        if max_teams is None:
-            max_teams = len(self.sections)
+        if num_teams is None:
+            num_teams = len(self.sections)
 
         # Check if the calculation days are specified
         if days is None:
@@ -406,18 +483,12 @@ class WallBuilderSimulator(WallBuilderAbc):
         listener = LogListener(log_queue)
         listener.start()
 
-        # Create the wall profiles from the configuration list
-        self.wall_profiles = [
-            self.create_profile(heights, index) for
-            index, heights in enumerate(self.config_list)
-        ]
-
         # Get the number of sections
         self.sections = self.get_sections()
 
         # Create a pool of workers
         pool = Pool(
-            processes=max_teams,
+            processes=num_teams,
             initializer=WallSection.configure,
             initargs=(log_queue,),
         )
@@ -457,15 +528,25 @@ class WallBuilderSimulator(WallBuilderAbc):
 
 def main():
     # Define the wall configuration
+    # config_list = [
+    #     [0, ] * 10,
+    #     [0, ] * 10,
+    # ]
+
     config_list = [
-        [0, ] * 10,
-        [0, ] * 10,
+        [21, 25, 28],
+        [17],
+        [17, 22, 17, 19, 17, ]
     ]
 
     # Create a wall builder
     builder = WallBuilderSimulator()
-    builder.set_config(config_list)
-    builder.build(max_teams=1, days=30)
+    builder.set_config_list(config_list)
+    builder.build(num_teams=20, days=30)
+
+    # Profile 1
+    profile = builder.wall_profiles[0]
+    print(profile.build(days=1))
 
 
 if __name__ == "__main__":
