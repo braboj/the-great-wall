@@ -25,15 +25,21 @@ from tracker import views
 # GET /profiles/1/days/1
 
 urlpatterns = [
-    path('overview/', views.overview_fetch, name='total_cost'),
-    path('overview/<int:day_id>/', views.overview_day_fetch, name='daily_cost'),
-    path('<int:profile_id>/overview/<int:day_id>/', views.overview_profile_day_fetch,
-         name='daily_profile_cost'),
-    path('<int:profile_id>/days/<int:day_id>/', views.daily_profile_status_fetch,
-         name='profile_day_detail'),
 
-    re_path(route=r"^((?P<profile_id>\d+)/)?overview(/(?P<day_id>\d+))?/$",
-            view=views.overview_fetch
-            ),
+    # Daily Status Endpoints
+    path('<int:profile_id>/days/<int:day_id>/', views.get_day_data),
+
+    # Overview Endpoints
+    path('<int:profile_id>/overview/<int:day_id>/', views.get_profile_overview),
+    path('overview/<int:day_id>/', views.get_day_overview),
+    path('overview/', views.get_overall_overview),
+
+    # NOTE: - Regex combining the above three endpoints
+    #       - Breaks SOLID principles as the handling view is too complex
+    #
+    # re_path(route=r"^((?P<profile_id>\d+)/)?overview(/(?P<day_id>\d+))?/$",
+    #         view=views.overview_fetch
+    #         ),
+
 ]
 

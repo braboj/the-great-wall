@@ -8,14 +8,13 @@ def home(request):
     return HttpResponse('Hello, World!')
 
 
-def overview_fetch(request):
+def get_overall_overview(request):
 
     config_list = apps.get_app_config("tracker").config_list
     num_teams = apps.get_app_config("tracker").num_teams
 
     try:
-        builder = WallBuilderSimulator()
-        builder.set_config_list(config_list)
+        builder = WallManager(config_list)
         builder.build(num_teams=num_teams, days=30)
 
     except Exception as e:
@@ -32,14 +31,13 @@ def overview_fetch(request):
         return JsonResponse(data)
 
 
-def overview_day_fetch(request, day_id):
+def get_day_overview(request, day_id):
 
     config_list = apps.get_app_config("tracker").config_list
     num_teams = apps.get_app_config("tracker").num_teams
 
     try:
-        builder = WallBuilderSimulator()
-        builder.set_config_list(config_list)
+        builder = WallManager(config_list)
         builder.build(num_teams=num_teams, days=day_id)
 
     except Exception as e:
@@ -55,18 +53,15 @@ def overview_day_fetch(request, day_id):
         return JsonResponse(data)
 
 
-def overview_profile_day_fetch(request, profile_id, day_id):
+def get_profile_overview(request, profile_id, day_id):
 
     config_list = apps.get_app_config("tracker").config_list
     num_teams = apps.get_app_config("tracker").num_teams
 
     try:
-        builder = WallBuilderSimulator()
-        builder.set_config_list(config_list)
+        builder = WallManager(config_list)
         builder.build(num_teams=num_teams, days=day_id)
-
-        profile = builder.wall_profiles[profile_id-1]
-        profile.build(days=day_id)
+        profile = builder.profiles[profile_id-1]
 
     except Exception as e:
         print(e)
@@ -81,18 +76,15 @@ def overview_profile_day_fetch(request, profile_id, day_id):
         return JsonResponse(data)
 
 
-def daily_profile_status_fetch(request, profile_id, day_id):
+def get_day_data(request, profile_id, day_id):
 
     config_list = apps.get_app_config("tracker").config_list
     num_teams = apps.get_app_config("tracker").num_teams
 
     try:
-        builder = WallBuilderSimulator()
-        builder.set_config_list(config_list)
+        builder = WallManager(config_list)
         builder.build(num_teams=num_teams, days=day_id)
-
-        profile = builder.wall_profiles[profile_id-1]
-        profile.build(days=day_id)
+        profile = builder.profiles[profile_id-1]
 
     except Exception as e:
         print(e)
