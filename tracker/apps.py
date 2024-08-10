@@ -1,15 +1,21 @@
 from django.apps import AppConfig
+from rootdir import ROOT_DIR
+from builder.manager import WallManager
+from builder.configurator import WallConfigurator
+
+import os
+
+LOG_FILE_PATH = os.path.join(ROOT_DIR, 'data', 'wall.log')
+INI_FILE_PATH = os.path.join(ROOT_DIR, 'data', 'wall.ini')
 
 
 class WallTrackerConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'tracker'
 
-    num_teams = 20
+    # Initialize the wall configurator
+    config = WallConfigurator.from_ini(INI_FILE_PATH)
 
-    config_list = [
-        [21, 25, 28],
-        [17],
-        [17, 22, 17, 19, 17, ]
-    ]
-
+    # Initialize the wall manager
+    manager = WallManager(log_filepath=LOG_FILE_PATH)
+    manager.set_config(config)

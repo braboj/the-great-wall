@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 # from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import path
 from tracker import views
 
 
@@ -34,6 +34,9 @@ urlpatterns = [
     path('overview/<int:day_id>/', views.get_day_overview),
     path('overview/', views.get_overall_overview),
 
+    # Configuration Endpoints
+    path('config/', views.handle_config),
+
     # NOTE: - Regex combining the above three endpoints
     #       - Breaks SOLID principles as the handling view is too complex
     #
@@ -42,4 +45,3 @@ urlpatterns = [
     #         ),
 
 ]
-
