@@ -11,7 +11,7 @@ class TestConfigurator(TestCase):
         self.default_config = WallConfigurator()
 
         # Define the default profiles
-        self.default_config.profiles_list = [
+        self.default_config.profile_list = [
             [21, 25, 28],
             [17, ],
             [17, 22, 17, 19, 17]
@@ -38,7 +38,7 @@ class TestConfigurator(TestCase):
             build_rate=5,
             num_workers=6,
             cpu_worktime=7,
-            profiles_list=[1, 2, 3]
+            profile_list=[1, 2, 3]
         )
 
         self.assertEqual(config.volume_ice_per_foot, 1)
@@ -48,7 +48,7 @@ class TestConfigurator(TestCase):
         self.assertEqual(config.build_rate, 5)
         self.assertEqual(config.num_workers, 6)
         self.assertEqual(config.cpu_worktime, 7)
-        self.assertEqual(config.profiles_list, [1, 2, 3])
+        self.assertEqual(config.profile_list, [1, 2, 3])
 
     def test_defaults(self):
 
@@ -61,12 +61,12 @@ class TestConfigurator(TestCase):
         self.assertEqual(config.build_rate, 1)
         self.assertEqual(config.num_workers, 20)
         self.assertEqual(config.cpu_worktime, 0.01)
-        self.assertEqual(config.profiles_list, [])
+        self.assertEqual(config.profile_list, [])
 
     def test_from_ini(self):
 
         # Define the default profiles
-        expected_profiles = self.default_config.profiles_list
+        expected_profiles = self.default_config.profile_list
 
         # Read the configuration from the default file
         config = WallConfigurator.from_ini('test.ini')
@@ -79,7 +79,7 @@ class TestConfigurator(TestCase):
         self.assertEqual(config.build_rate, 1)
         self.assertEqual(config.num_workers, 20)
         self.assertEqual(config.cpu_worktime, 0.01)
-        self.assertEqual(config.profiles_list, expected_profiles)
+        self.assertEqual(config.profile_list, expected_profiles)
 
     def test_to_ini(self):
 

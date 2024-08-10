@@ -51,7 +51,7 @@ class WallConfigurator(object):
         build_rate          : The rate of building the wall (in feet per hour)
         num_workers         : The number of workers
         cpu_worktime        : The CPU work time (in seconds)
-        profiles_list            : The list of profiles
+        profile_list            : The list of profiles
         log_file            : The log file
         ini_file            : The INI file
     """
@@ -66,7 +66,7 @@ class WallConfigurator(object):
                  cpu_worktime=0.01,
                  log_filepath=DEFAULT_LOG_FILE,
                  ini_filepath=DEFAULT_INI_FILE,
-                 profiles_list=None,
+                 profile_list=None,
                  ):
         """Initializes the configuration with default values.
 
@@ -78,7 +78,7 @@ class WallConfigurator(object):
             build_rate          : The rate of building the wall (feet per day)
             num_workers         : The number of workers
             cpu_worktime        : The CPU work time (in seconds)
-            profiles_list         : The list of profiles
+            profile_list         : The list of profiles
             log_filepath            : The log file
             ini_filepath            : The INI file
         """
@@ -95,7 +95,7 @@ class WallConfigurator(object):
         self.cpu_worktime = cpu_worktime
 
         # Profiles
-        self.profiles_list = profiles_list or []
+        self.profile_list = profile_list or []
 
         # Data storage
         self.log_file = log_filepath
@@ -112,7 +112,7 @@ class WallConfigurator(object):
             f"build_rate={self.build_rate}, "
             f"num_workers={self.num_workers}, "
             f"cpu_worktime={self.cpu_worktime}, "
-            f"profiles={self.profiles_list}, "
+            f"profiles={self.profile_list}, "
             f"log_file={self.log_file}, "
             f"ini_file={self.ini_file})"
         )
@@ -171,7 +171,7 @@ class WallConfigurator(object):
             data = parser['Profiles']
             for key in data:
                 # Convert the string to a list of integers
-                config.profiles_list.append([int(x) for x in key.split()])
+                config.profile_list.append([int(x) for x in key.split()])
 
         except ValueError as e:
             raise BuilderConfigError(
@@ -228,7 +228,7 @@ class WallConfigurator(object):
             try:
                 # Manually write the Profiles section
                 file_path.write('[Profiles]\n')
-                for profile in self.profiles_list:
+                for profile in self.profile_list:
 
                     # Convert the list of integers to a string
                     line = ' '.join([str(x) for x in profile])
