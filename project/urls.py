@@ -21,6 +21,6 @@ from tracker import views
 
 urlpatterns = [
     path('', view=views.home, name='home'),
-    path('admin/', admin.site.urls),
     path('profiles/', view=include('tracker.urls')),
+    path('admin/', admin.site.urls),
 ]

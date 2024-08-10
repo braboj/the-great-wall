@@ -7,7 +7,12 @@ from django.apps import apps
 
 @api_view(http_method_names=["GET"])
 def home(request):
-    return HttpResponse('Hello, World!')
+    return HttpResponse("Hello, world!")
+
+
+@api_view(http_method_names=["GET"])
+def index(request):
+    return HttpResponse("You're at the polls index.")
 
 
 @api_view(http_method_names=["GET"])

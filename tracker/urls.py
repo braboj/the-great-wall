@@ -19,12 +19,18 @@ from django.urls import path
 from tracker import views
 
 
+# Examples:
 # GET /profiles/overview/
 # GET /profiles/overview/1/
 # GET /profiles/1/overview/1/
 # GET /profiles/1/days/1
 
+# app_name = "profiles"
+
 urlpatterns = [
+
+    # Index
+    path('', views.index, name='index'),
 
     # Daily Status Endpoints
     path('<int:profile_id>/days/<int:day_id>/', views.get_day_data),
