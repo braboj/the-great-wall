@@ -68,9 +68,18 @@ class LogListener(Process):
     def stop(self):
         """Stop the log listener process."""
 
+        # Flush the log handlers
+        for handler in self.log.handlers:
+            handler.flush()
+
+        # Wait until the queue is empty
+        while not self.queue.empty():
+            time.sleep(0.1)
+
         # Stop the listener process using the sentinel message
         self.queue.put(None)
 
+        # Wait for the listener process to finish
         self.join()
 
     def run(self):
@@ -173,6 +182,7 @@ class WallSection(WallBuilderAbc):
         self.profile_id = profile_id
         self.start_height = start_height
         self.current_height = start_height
+        self.day = 0
 
         # Set the logger for the wall builder
         self.log = logging.getLogger(self.__class__.__name__)
@@ -320,10 +330,11 @@ class WallSection(WallBuilderAbc):
         # Build the wall until the desired height is reached
         if self.current_height < self.config.target_height:
             self.current_height += self.config.build_rate
+            self.day += 1
 
         # Log the build progress
         self.log.info(f'Added 1 foot to section {self.section_id} to reach'
-                      f' {self.current_height} feet')
+                      f' {self.current_height} feet on day {self.day}')
 
         # Simulate CPU work
         time.sleep(self.config.cpu_worktime)
@@ -699,11 +710,21 @@ class WallManager(WallBuilderAbc):
         # Get the root logger for the wall builder
         log = logging.getLogger()
 
+        """
+        The following code is commented out. It is working as expected, but
+        when the unit tests are started, something stays in the background
+        and doesn't allow the tests to finish. The tests are hanging.
+        
+        Investigate the issue and fix it. It is a nice problem to practice
+        debugging techniques on multiprocessing and logging.
+        """
+        # ----------------------------------------------------------------------
         # Create a QueueHandler to send log messages to a queue
-        handler = logging.handlers.QueueHandler(queue)
+        # handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
-        log.addHandler(handler)
+        # log.addHandler(handler)
+        # ----------------------------------------------------------------------
 
         # Set the log level for the root logger
         log.setLevel(logging.INFO)
@@ -753,8 +774,6 @@ class WallManager(WallBuilderAbc):
                 if self.is_ready():
                     break
 
-                self.log.info(f"@ Calculation Distribution Day {day + 1}")
-
                 # Map a section from a profile to a worker
                 self.sections = pool.map(WallSection.build, self.sections)
 
@@ -776,7 +795,6 @@ class WallManager(WallBuilderAbc):
 
         finally:
             log_listener.stop()
-
 
         # Return the updated wall builder
         return self
@@ -803,7 +821,7 @@ def main():
 
     # Create a wall builder
     builder = WallManager.set_config(config)
-    builder.build(num_teams=10, days=30)
+    builder.build(num_teams=1, days=30)
     # builder.build(num_teams=20, days=30)
     # builder.build(num_teams=20, days=1)
 
