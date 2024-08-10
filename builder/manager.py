@@ -496,7 +496,6 @@ class WallManager(WallBuilderAbc):
     """Manages the construction of a wall.
 
     Attributes:
-        config_list (list): A list of wall section configurations.
         profiles (list): A list of wall profiles.
         sections (list): A list of wall sections.
         log (Logger): The logger for the wall builder.
@@ -506,15 +505,10 @@ class WallManager(WallBuilderAbc):
     # All instances must share the same configuration
     config = WallConfigurator()
 
-    def __init__(self, config_list):
-        """Initializes the wall builder.
-
-        Args:
-            config_list (list): A nested list of wall section configurations.
-        """
+    def __init__(self):
+        """Initializes the wall builder."""
 
         # Set the instance attributes
-        self.config_list = list(config_list)
         self.profiles = []
         self.sections = []
 
@@ -525,9 +519,6 @@ class WallManager(WallBuilderAbc):
         # Create the log queue to receive log messages
         self.log_queue = Queue()
 
-        # Parse the configuration list
-        self.parse_config_list()
-
     def report(self, start_time, end_time):
         self.log.info('-' * 80)
         self.log.info(f'TOTAL ICE : {self.get_ice()}')
@@ -536,7 +527,7 @@ class WallManager(WallBuilderAbc):
         self.log.info(f"Calculation time: {end_time - start_time:.2f} seconds")
         self.log.info('-' * 80)
 
-    def parse_config_list(self):
+    def parse_profile_list(self):
         """Parse the configuration list to create wall sections.
 
         This method parses the configuration list to create wall sections. It
@@ -548,9 +539,9 @@ class WallManager(WallBuilderAbc):
         section_id = 0
 
         # Parse the sections and profiles from the configuration list
-        for row in self.config_list:
+        for row in self.config.profile_list:
 
-            profile_id = self.config_list.index(row)
+            profile_id = self.config.profile_list.index(row)
             profile = WallProfile(profile_id=profile_id)
 
             # Extract the sections from the row
@@ -566,6 +557,16 @@ class WallManager(WallBuilderAbc):
             # Create a wall profile from the sections
             self.profiles.append(profile)
             self.sections.extend(profile.sections)
+
+    def set_profile_list(self, profiles_list):
+        """Set the profiles' list.
+
+        Args:
+            profiles_list (list): A list of profiles.
+        """
+
+        # Set the profiles and sections
+        self.config.profile_list = profiles_list
 
     def update_profiles(self):
         """Update the profiles after calculations.
@@ -611,6 +612,7 @@ class WallManager(WallBuilderAbc):
     @classmethod
     def set_config(cls, config):
         cls.config = config
+        return cls()
 
     def is_ready(self):
         """Check if all wall sections are ready."""
@@ -639,20 +641,22 @@ class WallManager(WallBuilderAbc):
         the attributes are not of the correct type or value.
         """
 
+        profiles_list = self.config.profile_list
+
         # Check that config_list is a list
-        if not isinstance(self.config_list, list):
+        if not isinstance(profiles_list, list):
             raise BuilderValidationError(
                 info='The config_list must be a list'
             )
 
         # Check that all elements of config_list are lists
-        if not all(isinstance(element, list) for element in self.config_list):
+        if not all(isinstance(element, list) for element in profiles_list):
             raise BuilderValidationError(
                 info='All elements of config_list must be lists'
             )
 
         # Check that all elements of config_list are integers
-        for i, profiles in enumerate(self.config_list):
+        for i, profiles in enumerate(profiles_list):
             for j, section_height in enumerate(profiles):
                 if not isinstance(section_height, int):
                     raise BuilderValidationError(
@@ -710,6 +714,9 @@ class WallManager(WallBuilderAbc):
         log_listener.start()
 
         try:
+
+            # Parse the profile list
+            self.parse_profile_list()
 
             # Configure the wall manager to log to the queue
             self.prepare(self.log_queue)
@@ -774,8 +781,12 @@ def main():
         [17, 22, 17, 19, 17, ]
     ]
 
+    config = WallConfigurator(
+        profile_list=config_list,
+    )
+
     # Create a wall builder
-    builder = WallManager(config_list)
+    builder = WallManager.set_config(config)
     builder.build(num_teams=20, days=1)
     # builder.build(num_teams=20, days=1)
     # builder.build(num_teams=20, days=1)

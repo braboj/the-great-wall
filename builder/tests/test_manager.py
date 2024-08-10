@@ -293,11 +293,11 @@ class TestWallManager(TestCase):
 
     def test_init(self):
 
-        config_list = [[1, ], [4, ]]
-        manager = WallManager(config_list)
-
-        # Check the config list is set
-        self.assertEqual(manager.config_list, config_list)
+        # Check default values are set
+        manager = WallManager()
+        self.assertIsInstance(manager.config, WallConfigurator)
+        self.assertEqual(manager.sections, [])
+        self.assertEqual(manager.profiles, [])
 
     def test_is_ready(self):
 
@@ -305,7 +305,8 @@ class TestWallManager(TestCase):
         config_list = [[1, 2], [3, ]]
 
         # Initialize the manager
-        manager = WallManager(config_list)
+        manager = WallManager()
+        manager.set_profile_list(config_list)
 
         # Check the manager is not ready
         self.assertFalse(manager.is_ready())
@@ -325,7 +326,8 @@ class TestWallManager(TestCase):
         expected_ice = 3 * (_TARGET_HEIGHT_ - 29) * _VOLUME_ICE_PER_FOOT_
 
         # Create the manager
-        manager = WallManager(config_list)
+        manager = WallManager()
+        manager.set_profile_list(config_list)
 
         # Build for one day
         manager.build(days=1)
@@ -345,7 +347,8 @@ class TestWallManager(TestCase):
                          )
 
         # Create the manager
-        manager = WallManager(config_list)
+        manager = WallManager()
+        manager.set_profile_list(config_list)
 
         # Build for one day
         manager.build(days=1)
@@ -359,7 +362,8 @@ class TestWallManager(TestCase):
         config_list = [[29, 29], [29, ]]
 
         # Initialize the manager
-        manager = WallManager(config_list)
+        manager = WallManager()
+        manager.set_profile_list(config_list)
 
         # Build for one day
         manager.build(days=1)
@@ -369,21 +373,24 @@ class TestWallManager(TestCase):
 
     def test_validate_config_list(self):
 
+        # Configure the manager
+        config_list = [[1, 2], [3, 4]]
+
         # Create the manager
-        manager = WallManager([])
+        manager = WallManager()
 
         # Define a valid nested list
-        manager.config_list = [[1, 2], [3, 4]]
+        manager.set_profile_list(config_list)
         manager.validate()
 
         # Check the validation fails
         config_list = [1, 2, 3, 4, 5]
         with self.assertRaises(BuilderValidationError):
-            manager.config_list = config_list
+            manager.set_profile_list(config_list)
             manager.validate()
 
         # Define an invalid list with non-integer values
         config_list = [[1, 2], [3, 'a']]
         with self.assertRaises(BuilderValidationError):
-            manager.config_list = config_list
+            manager.set_profile_list(config_list)
             manager.validate()
