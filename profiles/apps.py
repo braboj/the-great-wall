@@ -9,9 +9,9 @@ LOG_FILE_PATH = os.path.join(ROOT_DIR, 'data', 'wall.log')
 INI_FILE_PATH = os.path.join(ROOT_DIR, 'data', 'wall.ini')
 
 
-class WallTrackerConfig(AppConfig):
+class WallProfilesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'tracker'
+    name = 'profiles'
 
     # Initialize the wall configurator
     config = WallConfigurator.from_ini(INI_FILE_PATH)

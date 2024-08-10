@@ -18,7 +18,7 @@ def index(request):
 @api_view(http_method_names=["GET"])
 def get_overall_overview(request):
 
-    app = apps.get_app_config("tracker")
+    app = apps.get_app_config("profiles")
     num_teams = app.config.num_teams
 
     try:
@@ -40,7 +40,7 @@ def get_overall_overview(request):
 @api_view(http_method_names=["GET"])
 def get_day_overview(request, day_id):
 
-    app = apps.get_app_config("tracker")
+    app = apps.get_app_config("profiles")
     num_teams = app.config.num_teams
 
     try:
@@ -61,7 +61,7 @@ def get_day_overview(request, day_id):
 @api_view(http_method_names=["GET"])
 def get_profile_overview(request, profile_id, day_id):
 
-    app = apps.get_app_config("tracker")
+    app = apps.get_app_config("profiles")
     num_teams = app.config.num_teams
 
     try:
@@ -82,7 +82,7 @@ def get_profile_overview(request, profile_id, day_id):
 
 @api_view(http_method_names=["GET"])
 def get_day_data(request, profile_id, day_id):
-    app = apps.get_app_config("tracker")
+    app = apps.get_app_config("profiles")
     num_teams = app.config.num_teams
 
     try:
@@ -106,7 +106,7 @@ def get_day_data(request, profile_id, day_id):
 def handle_config(request):
 
     # Get the app
-    app = apps.get_app_config("tracker")
+    app = apps.get_app_config("profiles")
 
     try:
         if request.method == "GET":

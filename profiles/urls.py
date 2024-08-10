@@ -16,7 +16,7 @@ Including another URLconf
 """
 # from django.contrib import admin
 from django.urls import path
-from tracker import views
+from profiles import views
 
 
 # Examples:
@@ -25,8 +25,10 @@ from tracker import views
 # GET /profiles/1/overview/1/
 # GET /profiles/1/days/1
 
-# app_name = "profiles"
+# Define the namespace for `profiles` app
+app_name = "profiles"
 
+# Define the URL patterns for the `profiles` app
 urlpatterns = [
 
     # Index
@@ -43,11 +45,5 @@ urlpatterns = [
     # Configuration Endpoints
     path('config/', views.handle_config),
 
-    # NOTE: - Regex combining the above three endpoints
-    #       - Breaks SOLID principles as the handling view is too complex
-    #
-    # re_path(route=r"^((?P<profile_id>\d+)/)?overview(/(?P<day_id>\d+))?/$",
-    #         view=views.overview_fetch
-    #         ),
 
 ]
