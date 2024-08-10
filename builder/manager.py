@@ -1,17 +1,12 @@
 # encoding: utf-8
 from multiprocessing import Process, Pool, Queue, current_process
 from abc import ABC, abstractmethod
-from rootdir import ROOT_DIR
 from builder.errors import *
-from builder.defines import *
+from builder.configurator import WallConfigurator
 
-import logging
 import logging.handlers
+import logging
 import time
-import os
-
-# Constants
-LOG_FILE = os.path.join(ROOT_DIR, 'data', 'wall_progress.log')
 
 
 class LogListener(Process):
@@ -23,7 +18,7 @@ class LogListener(Process):
         log (Logger)    : The root logger.
     """
 
-    def __init__(self, queue, logfile=LOG_FILE):
+    def __init__(self, queue, logfile='listener.log'):
         """Initializes the log listener process.
 
         Args:
@@ -111,6 +106,15 @@ class WallBuilderAbc(ABC):
     """Abstract base class for the wall builder."""
 
     @abstractmethod
+    def set_config(self, config):
+        """Sets an instance of the WallConfigurator class.
+
+        Args:
+            config (WallConfigurator): A configuration object.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     def is_ready(self):
         """Check if the wall is ready to be constructed."""
         raise NotImplementedError
@@ -151,6 +155,9 @@ class WallSection(WallBuilderAbc):
         current_height (int): The current height of the wall section.
         log (Logger)        : The logger for the wall section.
     """
+
+    # All instances must share the same configuration
+    config = WallConfigurator()
 
     def __init__(self, section_id, profile_id=None, start_height=0):
         """Initializes the wall section.
@@ -195,18 +202,22 @@ class WallSection(WallBuilderAbc):
                 f')'
                 )
 
+    @classmethod
+    def set_config(cls, config):
+        cls.config = config
+
     def is_ready(self):
         """Returns True if the wall section is ready to be constructed."""
-        return self.current_height >= TARGET_HEIGHT
+        return self.current_height >= self.config.target_height
 
     def get_ice(self):
         """Returns the ice consumed by the wall section."""
         delta = self.current_height - self.start_height
-        return delta * VOLUME_ICE_PER_FOOT
+        return delta * self.config.volume_ice_per_foot
 
     def get_cost(self):
         """Returns the cost of the wall section."""
-        return self.get_ice() * COST_PER_VOLUME
+        return self.get_ice() * self.config.cost_per_volume
 
     def validate(self):
         """Validates the wall section configuration.
@@ -230,7 +241,7 @@ class WallSection(WallBuilderAbc):
             )
 
         # Check that the start height is between 0 and the target height
-        if not 0 <= self.start_height <= TARGET_HEIGHT:
+        if not 0 <= self.start_height <= self.config.target_height:
             raise BuilderValidationError(
                 info='The start height must be between 0 and 30'
             )
@@ -307,15 +318,15 @@ class WallSection(WallBuilderAbc):
         current_process().name = f'Worker-{original_name.split("-")[-1]}'
 
         # Build the wall until the desired height is reached
-        if self.current_height < TARGET_HEIGHT:
-            self.current_height += BUILD_RATE
+        if self.current_height < self.config.target_height:
+            self.current_height += self.config.build_rate
 
         # Log the build progress
         self.log.info(f'Added 1 foot to section {self.section_id} to reach'
                       f' {self.current_height} feet')
 
         # Simulate CPU work
-        time.sleep(SIMULATION_TIME)
+        time.sleep(self.config.cpu_worktime)
 
         # Return the updated wall section
         return self
@@ -329,6 +340,9 @@ class WallProfile(WallBuilderAbc):
         sections (list): A list of wall sections in the profile.
         log (Logger): The logger for the wall profile.
     """
+
+    # All instances must share the same configuration
+    config = WallConfigurator()
 
     def __init__(self, profile_id, sections=None):
         """Initializes the wall profile.
@@ -367,6 +381,10 @@ class WallProfile(WallBuilderAbc):
                 f")"
                 )
 
+    @classmethod
+    def set_config(cls, config):
+        cls.config = config
+
     def is_ready(self):
         """Returns True if the wall profile is ready to be constructed."""
 
@@ -384,7 +402,7 @@ class WallProfile(WallBuilderAbc):
 
     def get_cost(self):
         """Returns the total cost of the wall profile."""
-        return self.get_ice() * COST_PER_VOLUME
+        return self.get_ice() * self.config.cost_per_volume
 
     def validate(self):
         """Validates the wall profile configuration.
@@ -425,7 +443,7 @@ class WallProfile(WallBuilderAbc):
             )
 
         # Check that the section size is between 1 and 2000
-        if not 1 <= len(self.sections) <= MAX_SECTION_COUNT:
+        if not 1 <= len(self.sections) <= self.config.max_section_count:
             raise BuilderValidationError(
                 info='The sections count must be between 1 and 2000'
             )
@@ -484,6 +502,9 @@ class WallManager(WallBuilderAbc):
         log (Logger): The logger for the wall builder.
         log_queue (Queue): A queue to receive log messages.
     """
+
+    # All instances must share the same configuration
+    config = WallConfigurator()
 
     def __init__(self, config_list):
         """Initializes the wall builder.
@@ -587,6 +608,10 @@ class WallManager(WallBuilderAbc):
         return next(section for section in self.sections
                     if section.section_id == section_id)
 
+    @classmethod
+    def set_config(cls, config):
+        cls.config = config
+
     def is_ready(self):
         """Check if all wall sections are ready."""
 
@@ -678,7 +703,10 @@ class WallManager(WallBuilderAbc):
         """
 
         # Start the log listener process
-        log_listener = LogListener(self.log_queue)
+        log_listener = LogListener(
+            queue=self.log_queue,
+            logfile=self.config.log_file
+        )
         log_listener.start()
 
         try:

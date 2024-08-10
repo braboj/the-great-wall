@@ -5,6 +5,18 @@ from pathlib import Path
 from rootdir import ROOT_DIR
 import configparser
 
+# These constants are meant to be private and should not be used directly
+# in the user's code. The WallConfigurator class provides a single point of
+# access to the configuration data.
+
+_VOLUME_ICE_PER_FOOT_ = 195   # Material consumption per foot
+_COST_PER_VOLUME_ = 1900      # Cost of material per volume
+_TARGET_HEIGHT_ = 30          # Fixed height of the wall
+_SIMULATION_TIME_ = 0.01      # Simulated CPU work
+_MAX_SECTION_COUNT_ = 2000    # Maximum number of sections
+_MAX_WORKERS_ = 20            # Maximum number of workers
+_BUILD_RATE_ = 1              # Feet per day
+
 
 class ConfiguratorAbc(ABC):
     """Abstract base class for configurators."""
@@ -53,9 +65,9 @@ class WallConfigurator(object):
                  build_rate=1,
                  num_workers=20,
                  cpu_worktime=0.01,
-                 profiles=None,
                  log_file=LOG_FILE,
-                 ini_file=INI_FILE
+                 ini_file=INI_FILE,
+                 profiles=None,
                  ):
         """Initializes the configuration with default values.
 

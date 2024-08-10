@@ -1,7 +1,12 @@
 from unittest import TestCase
 from builder.manager import *
 from builder.errors import *
-from builder.defines import *
+from builder.configurator import (
+    _TARGET_HEIGHT_,
+    _VOLUME_ICE_PER_FOOT_,
+    _COST_PER_VOLUME_,
+    _MAX_SECTION_COUNT_
+)
 
 
 class TestWallSection(TestCase):
@@ -24,7 +29,7 @@ class TestWallSection(TestCase):
         self.assertFalse(self.section.is_ready())
 
         # Build until the target height is reached
-        for i in range(TARGET_HEIGHT):
+        for i in range(_TARGET_HEIGHT_):
             self.section.build()
 
         # Check the section is ready
@@ -33,11 +38,11 @@ class TestWallSection(TestCase):
     def test_build(self):
 
         # Build and check the height is incremented
-        for i in range(TARGET_HEIGHT):
+        for i in range(_TARGET_HEIGHT_):
             self.section.build()
 
         # Check the current height is equal to the target height
-        self.assertEqual(self.section.current_height, TARGET_HEIGHT)
+        self.assertEqual(self.section.current_height, _TARGET_HEIGHT_)
 
     def test_get_ice(self):
 
@@ -50,16 +55,16 @@ class TestWallSection(TestCase):
         # Build one foot of ice
         self.section.build()
 
-        # Check the total ice is one foot * VOLUME_ICE_PER_FOOT
-        self.assertEqual(self.section.get_ice(), VOLUME_ICE_PER_FOOT)
+        # Check the total ice is one foot * _VOLUME_ICE_PER_FOOT_
+        self.assertEqual(self.section.get_ice(), _VOLUME_ICE_PER_FOOT_)
 
         # Build until the target height is reached
-        for i in range(TARGET_HEIGHT):
+        for i in range(_TARGET_HEIGHT_):
             self.section.build()
 
-        # ICE = (TARGET_HEIGHT - START_HEIGHT) * VOLUME_ICE_PER_FOOT
-        difference = TARGET_HEIGHT - self.section.start_height
-        expected_ice = difference * VOLUME_ICE_PER_FOOT
+        # ICE = (_TARGET_HEIGHT_ - START_HEIGHT) * _VOLUME_ICE_PER_FOOT_
+        difference = _TARGET_HEIGHT_ - self.section.start_height
+        expected_ice = difference * _VOLUME_ICE_PER_FOOT_
         self.assertEqual(self.section.get_ice(), expected_ice)
 
     def test_get_cost(self):
@@ -73,19 +78,19 @@ class TestWallSection(TestCase):
         # Build one foot of ice
         self.section.build()
 
-        # ICE = (TARGET_HEIGHT - START_HEIGHT) * VOLUME_ICE_PER_FOOT
-        # COST = ICE * COST_PER_VOLUME
-        expected_cost = VOLUME_ICE_PER_FOOT * COST_PER_VOLUME
+        # ICE = (_TARGET_HEIGHT_ - START_HEIGHT) * _VOLUME_ICE_PER_FOOT_
+        # COST = ICE * _COST_PER_VOLUME_
+        expected_cost = _VOLUME_ICE_PER_FOOT_ * _COST_PER_VOLUME_
         self.assertEqual(self.section.get_cost(), expected_cost)
 
         # Build until the target height is reached
-        for i in range(TARGET_HEIGHT):
+        for i in range(_TARGET_HEIGHT_):
             self.section.build()
 
-        # ICE = (TARGET_HEIGHT - START_HEIGHT) * VOLUME_ICE_PER_FOOT
-        delta = TARGET_HEIGHT - self.section.start_height
-        expected_ice = delta * VOLUME_ICE_PER_FOOT
-        expected_cost = expected_ice * COST_PER_VOLUME
+        # ICE = (_TARGET_HEIGHT_ - START_HEIGHT) * _VOLUME_ICE_PER_FOOT_
+        delta = _TARGET_HEIGHT_ - self.section.start_height
+        expected_ice = delta * _VOLUME_ICE_PER_FOOT_
+        expected_cost = expected_ice * _COST_PER_VOLUME_
         self.assertEqual(self.section.get_cost(), expected_cost)
 
     def test_validate_start_height(self):
@@ -95,7 +100,7 @@ class TestWallSection(TestCase):
 
         # Set the start height to valid values
         section = WallSection(section_id=1, start_height=0)
-        test_values = [0, TARGET_HEIGHT]
+        test_values = [0, _TARGET_HEIGHT_]
         for value in test_values:
             section.start_height = value
             section.validate()
@@ -174,7 +179,7 @@ class TestWallProfile(TestCase):
 
         # Build until the target height is reached
         for section in self.sections:
-            for i in range(TARGET_HEIGHT):
+            for i in range(_TARGET_HEIGHT_):
                 section.build()
 
         # Check the profile is ready
@@ -189,18 +194,18 @@ class TestWallProfile(TestCase):
         for section in self.sections:
             section.build()
 
-        # Check the total ice is one foot * VOLUME_ICE_PER_FOOT
-        expected_ice = VOLUME_ICE_PER_FOOT * len(self.sections)
+        # Check the total ice is one foot * _VOLUME_ICE_PER_FOOT_
+        expected_ice = _VOLUME_ICE_PER_FOOT_ * len(self.sections)
         self.assertEqual(self.profile.get_ice(), expected_ice)
 
         # Build until the target height is reached
         for section in self.sections:
-            for i in range(TARGET_HEIGHT):
+            for i in range(_TARGET_HEIGHT_):
                 section.build()
 
-        # ICE = sum((TARGET_HEIGHT - START_HEIGHT) * VOLUME_ICE_PER_FOOT)
+        # ICE = sum((_TARGET_HEIGHT_ - START_HEIGHT) * _VOLUME_ICE_PER_FOOT_)
         expected_ice = sum(
-            (TARGET_HEIGHT - section.start_height) * VOLUME_ICE_PER_FOOT for
+            (_TARGET_HEIGHT_ - section.start_height) * _VOLUME_ICE_PER_FOOT_ for
             section in self.sections
         )
         self.assertEqual(self.profile.get_ice(), expected_ice)
@@ -212,16 +217,16 @@ class TestWallProfile(TestCase):
 
         # Build until the target height is reached
         for section in self.sections:
-            for i in range(TARGET_HEIGHT):
+            for i in range(_TARGET_HEIGHT_):
                 section.build()
 
-        # ICE = sum((TARGET_HEIGHT - START_HEIGHT) * VOLUME_ICE_PER_FOOT)
-        # COST = ICE * COST_PER_VOLUME
+        # ICE = sum((_TARGET_HEIGHT_ - START_HEIGHT) * _VOLUME_ICE_PER_FOOT_)
+        # COST = ICE * _COST_PER_VOLUME_
         expected_ice = sum(
-            (TARGET_HEIGHT - section.start_height) * VOLUME_ICE_PER_FOOT for
+            (_TARGET_HEIGHT_ - section.start_height) * _VOLUME_ICE_PER_FOOT_ for
             section in self.sections
         )
-        expected_cost = expected_ice * COST_PER_VOLUME
+        expected_cost = expected_ice * _COST_PER_VOLUME_
         self.assertEqual(self.profile.get_cost(), expected_cost)
 
     def test_build(self):
@@ -231,7 +236,7 @@ class TestWallProfile(TestCase):
 
         # Build and check the height is incremented
         for section in self.sections:
-            for i in range(TARGET_HEIGHT):
+            for i in range(_TARGET_HEIGHT_):
                 section.build()
 
         # Check the profile is ready
@@ -239,7 +244,7 @@ class TestWallProfile(TestCase):
 
         # Check that the current height is equal to the target height
         for section in self.sections:
-            self.assertEqual(section.current_height, TARGET_HEIGHT)
+            self.assertEqual(section.current_height, _TARGET_HEIGHT_)
 
     def test_validate_profile_id(self):
 
@@ -277,7 +282,7 @@ class TestWallProfile(TestCase):
 
         # Set the sections to invalid size
         profile = WallProfile(profile_id=1, sections=self.sections)
-        test_values = [[], [WallSection(0)] * (MAX_SECTION_COUNT + 1)]
+        test_values = [[], [WallSection(0)] * (_MAX_SECTION_COUNT_ + 1)]
         for value in test_values:
             with self.assertRaises(BuilderValidationError):
                 profile.sections = value
@@ -317,7 +322,7 @@ class TestWallManager(TestCase):
         config_list = [[29, 29], [29, ]]
 
         # Define the expected result
-        expected_ice = 3 * (TARGET_HEIGHT - 29) * VOLUME_ICE_PER_FOOT
+        expected_ice = 3 * (_TARGET_HEIGHT_ - 29) * _VOLUME_ICE_PER_FOOT_
 
         # Create the manager
         manager = WallManager(config_list)
@@ -334,9 +339,9 @@ class TestWallManager(TestCase):
         config_list = [[29, 29], [29, ]]
 
         # Define the expected result
-        expected_cost = (3 * (TARGET_HEIGHT - 29) *
-                         VOLUME_ICE_PER_FOOT *
-                         COST_PER_VOLUME
+        expected_cost = (3 * (_TARGET_HEIGHT_ - 29) *
+                         _VOLUME_ICE_PER_FOOT_ *
+                         _COST_PER_VOLUME_
                          )
 
         # Create the manager
