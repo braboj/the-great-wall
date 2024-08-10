@@ -166,7 +166,7 @@ _Time spent: 2 hours for reading, prototyping and implementation_
 A challenge in the implementation is to log the progress of the construction
 crews in a file that is shared between the processes.
 
-> https://docs.python.org/3/howto/logging-cookbook.html
+> https://docs.python.org/3/howto/logging-cookbook.html#logging-to-a-single-file-from-multiple-processes
 >
 > Although logging is thread-safe, and logging to a single file from 
 > multiple threads in a single process is supported, logging to a single 
@@ -225,7 +225,6 @@ is not affected by the number of workers.
 
 Sources:
 - [/scripts/proof_of_concept.py](../scripts/proof_of_concept.py)
-- [/scripts/test_proof_of_concept.py](../scripts/test_proof_of_concept.py)
 
 ## 5. Product Design
 
@@ -271,13 +270,18 @@ _Time spent: 4 hours for implementation_
 
 ## 6. Django REST API
 
+_Time spent: 12 hours for implementation and testing_
+
 ### 6.1. Objectives
 
 * [x] Create a django project
 * [x] Create a django application
 * [x] Add and route a 'Hello, World!' view
 * [x] Add the required views and route them
-* [ ] Connect the views and the wall builder logic
+* [x] Connect the views and the wall builder logic
+* [x] Improve the builder simulator
+* [ ] Allow configuration from the user
+* [ ] Test the views
 
 ### 6.2. Create a Django project
 
@@ -328,16 +332,16 @@ Create a URL pattern that routes the view to the root URL.
 
 ```python
 from django.urls import path
-from tracker import views
+from profiles import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
+  path('', views.home, name='home'),
 ]
 ```
 
 ![hello_world.png](../assets/images/django_route_hello_world.png)
 
-### 6.6. Add the required dummy views and route them
+### 6.6. Add the required stub views and route them
 
 Add the required views that will just echo the input data. The views will 
 later connect to the wall builder simulator.
@@ -349,7 +353,7 @@ later connect to the wall builder simulator.
 
 ### 6.7. Connect the views to the wall builder logic
 
-First, we will start to connect the views to the builder logic. As input we
+First, we will start to connect the views to the builder logic. As input, we
 will take the example in the documentation:
 
 ```text
@@ -389,64 +393,45 @@ cost: “32,233,500”
 Result:
 - [Rest_API_routing_test.mp4](..%2Fassets%2Fvideos%2FRest_API_routing_test.mp4)
 
-### Optimize the URL routing
 
-For simplicity, the current implementation has a 1:1 mapping from url to view.
+### 6.8. Improve the builder simulator
 
-```text
-urlpatterns = [
-    path('overview/', views.total_cost, name='total_cost'),
-    path('overview/<int:day_id>/', views.daily_cost, name='daily_cost'),
-    path('<int:profile_id>/overview/<int:day_id>/', views.daily_profile_cost,
-         name='daily_profile_cost'),
-    path('<int:profile_id>/days/<int:day_id>/', views.profile_daily_details,
-         name='profile_day_detail'),
-]
-```
-We will refactor the mapping and reduce the registered URL's
+After the integration of the views with the builder logic, we will improve the
+builder simulator based on some issues found during the previous steps.
 
-urlpatterns = [
-    path('overview/', views.total_cost, name='total_cost'),
-    path('overview/<int:day_id>/', views.daily_cost, name='daily_cost'),
-    path('<int:profile_id>/overview/<int:day_id>/', views.daily_profile_cost,
-         name='daily_profile_cost'),
-    path('<int:profile_id>/days/<int:day_id>/', views.profile_daily_details,
-         name='profile_day_detail'),
-]
+- [x] Update both sections and profiles after each calculation
+- [x] Add base exception class and extend the error hierarchy
+- [x] Add more unit tests to cover all relevant classes
 
-### Update the builder simulator
+> For unknown reasons, the unit tests are not working as expected. The tests are
+> passing, but after the tests something is not closed properly and the test 
+> runner hangs. Running the simulator multiple times does not show any 
+> problems. The issue is not yet resolved.
 
-The current implementation of the simulator has the following problems:
+### 6.9. Allow configuration from the user
 
-- The calculation distributes the work to the sections, and thus the profiles 
-  are not updated with the new values.
-- The module lacks a good exception hierarchy with meaningful messages
+- [x] Handle exceptions in the views
+- [x] WallConfigurator class that will import or export the wall configuration
+- [x] Extend the REST API to allow the user to configure the wall
+- [x] Handle the views with the Django REST framework
+- [ ] Provide unit tests for the views
 
-
-
-
-
-### 6.. Allow configuration from the user
-
-- WallConfigurator class (ini file), teams and profile
-- Extend the REST API to allow the user to configure the wall
-
-### 6.. References
+### 6.11. References
 - https://simpleisbetterthancomplex.com/series/beginners-guide/1.11/
 - https://www.djangoproject.com/
 - https://www.django-rest-framework.org/
 - https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django
 - https://apiguide.readthedocs.io/en/latest/index.html
 - https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
+- https://django.cowhite.com/blog/working-with-url-get-post-parameters-in-django/
 
-## . Code Review
-
-- [ ] Code Review of the builder logic (code, tests, docstrings, diagrams)
-- [ ] Code Review of the Django REST API (code, tests, docstrings, diagrams)
  
-## . Containerize the solution
+## 7. Containerize the solution
 
-## . Feedback from a beta tester
+### 7.. References
+- https://github.com/cyantarek/django-microservices/blob/master/services/products/api/views.py
+- https://github.com/thejungwon/docker-webapp-django/tree/master
+- https://github.com/StephenGrider/microservices-casts
 
 ## . Documentation
 
@@ -479,7 +464,11 @@ Till now, we were in the pre-development phase. After the tag, changes will be
 tracked using concrete issues in the commit messages.
 
 
-## . Additional Tasks
+## . Backlog
 
-- Django Models for persisting the data
+- Use django models and database for the calculations
 - Django REST framework to create the REST API
+- Class-based views
+- Resolve issue with the unit tests, change the logging solution to pure 
+  queue and then save the log in the main process or migrate to concurrent.futures
+- Convert WallConfigurator to a dataclass
