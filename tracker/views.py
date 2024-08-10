@@ -1,15 +1,16 @@
-import json
-
+# encoding: utf-8
 from rest_framework.decorators import api_view
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.apps import apps
 
 
+@api_view(http_method_names=["GET"])
 def home(request):
     return HttpResponse('Hello, World!')
 
 
+@api_view(http_method_names=["GET"])
 def get_overall_overview(request):
 
     app = apps.get_app_config("tracker")
@@ -31,6 +32,7 @@ def get_overall_overview(request):
         return JsonResponse(data)
 
 
+@api_view(http_method_names=["GET"])
 def get_day_overview(request, day_id):
 
     app = apps.get_app_config("tracker")
@@ -51,6 +53,7 @@ def get_day_overview(request, day_id):
         return JsonResponse(data)
 
 
+@api_view(http_method_names=["GET"])
 def get_profile_overview(request, profile_id, day_id):
 
     app = apps.get_app_config("tracker")
@@ -72,6 +75,7 @@ def get_profile_overview(request, profile_id, day_id):
         return JsonResponse(data)
 
 
+@api_view(http_method_names=["GET"])
 def get_day_data(request, profile_id, day_id):
     app = apps.get_app_config("tracker")
     num_teams = app.config.num_teams
