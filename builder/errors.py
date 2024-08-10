@@ -1,10 +1,10 @@
 # encoding: utf-8
 class BuilderError(Exception):
-    """ Base class for exceptions related to building processes.
+    """Base class for exceptions related to building processes.
 
     Attributes:
-        message (str): Description of the error.
-        info (str): Optional additional information about the error context.
+        message (str)   : Description of the error.
+        info (str)      : Additional information about the error context.
     """
 
     def __init__(self, message, info=""):
@@ -14,7 +14,7 @@ class BuilderError(Exception):
 
     def __str__(self):
         if self.info:
-            return f"{self.message} (Additional info: {self.info})"
+            return f"{self.message} ({self.info})"
         return self.message
 
 
@@ -32,6 +32,8 @@ class BuilderValidationError(BuilderError):
 
 
 def main():
+    """Main function for testing the BuilderError class."""
+
     try:
         raise BuilderError("An error occurred")
     except BuilderError as e:
