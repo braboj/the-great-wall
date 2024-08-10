@@ -599,8 +599,14 @@ class WallManager(WallBuilderAbc):
             WallProfile: The wall profile with the specified ID.
         """
 
-        return next(profile for profile in self.profiles
-                    if profile.profile_id == profile_id)
+        try:
+            return next(
+                profile for profile in self.profiles
+                if profile.profile_id == profile_id
+            )
+
+        except StopIteration:
+            raise BuilderError(f"Profile with ID {profile_id} not found.")
 
     def get_section(self, section_id):
         """Get a section by its ID.
@@ -612,8 +618,14 @@ class WallManager(WallBuilderAbc):
             WallSection: The wall section with the specified ID.
         """
 
-        return next(section for section in self.sections
-                    if section.section_id == section_id)
+        try:
+            return next(
+                section for section in self.sections
+                if section.section_id == section_id
+            )
+
+        except StopIteration:
+            raise BuilderError(f"Section with ID {section_id} not found.")
 
     @classmethod
     def set_config(cls, config):
