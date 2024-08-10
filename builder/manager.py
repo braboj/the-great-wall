@@ -519,6 +519,7 @@ class WallManager(WallBuilderAbc):
 
         # Create the log queue to receive log messages
         self.log_queue = Queue()
+        self.prepare(self.log_queue)
 
     def report(self, start_time, end_time):
         self.log.info('-' * 80)
@@ -538,6 +539,10 @@ class WallManager(WallBuilderAbc):
 
         # Helper variable to track the section ID
         section_id = 0
+
+        # Clear the profiles and sections
+        self.profiles.clear()
+        self.sections.clear()
 
         # Parse the sections and profiles from the configuration list
         for row in self.config.profiles:
@@ -691,7 +696,7 @@ class WallManager(WallBuilderAbc):
         # Set the log level for the root logger
         log.setLevel(logging.INFO)
 
-    def build(self, days=1, num_teams=5):
+    def build(self, days=1, num_teams=1):
         """Build the wall using a pool of workers.
 
         This method builds the wall using a pool of workers. The workers are
@@ -718,9 +723,6 @@ class WallManager(WallBuilderAbc):
 
             # Parse the profile list
             self.parse_profile_list()
-
-            # Configure the wall manager to log to the queue
-            self.prepare(self.log_queue)
 
             # Create a pool of workers
             pool = Pool(
@@ -789,8 +791,8 @@ def main():
 
     # Create a wall builder
     builder = WallManager.set_config(config)
-    builder.build(num_teams=1, days=1)
-    # builder.build(num_teams=20, days=1)
+    builder.build(num_teams=10, days=30)
+    # builder.build(num_teams=20, days=30)
     # builder.build(num_teams=20, days=1)
 
     # Profile 1
