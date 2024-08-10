@@ -6,7 +6,7 @@ from pathlib import Path
 import configparser
 
 DEFAULT_LOG_FILE = 'wall_progress.log'
-DEFAULT_INI_FILE = 'config.ini'
+DEFAULT_INI_FILE = 'wall.ini'
 
 # These constants are meant to be private and should not be used directly
 # in the user's code. The WallConfigurator class provides a single point of
