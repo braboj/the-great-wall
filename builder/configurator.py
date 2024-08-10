@@ -2,8 +2,10 @@
 from abc import ABC, abstractmethod
 from builder.errors import BuilderConfigError
 from pathlib import Path
-from rootdir import ROOT_DIR
 import configparser
+
+DEFAULT_LOG_FILE = 'wall_progress.log'
+DEFAULT_INI_FILE = 'config.ini'
 
 # These constants are meant to be private and should not be used directly
 # in the user's code. The WallConfigurator class provides a single point of
@@ -49,13 +51,10 @@ class WallConfigurator(object):
         build_rate          : The rate of building the wall (in feet per hour)
         num_workers         : The number of workers
         cpu_worktime        : The CPU work time (in seconds)
-        profiles            : The list of profiles
+        profiles_list            : The list of profiles
         log_file            : The log file
         ini_file            : The INI file
     """
-
-    LOG_FILE = ROOT_DIR + '/data/wall_progress.log'
-    INI_FILE = ROOT_DIR + '/data/config.ini'
 
     def __init__(self,
                  volume_ice_per_foot=195,
@@ -65,9 +64,9 @@ class WallConfigurator(object):
                  build_rate=1,
                  num_workers=20,
                  cpu_worktime=0.01,
-                 log_file=LOG_FILE,
-                 ini_file=INI_FILE,
-                 profiles=None,
+                 log_filepath=DEFAULT_LOG_FILE,
+                 ini_filepath=DEFAULT_INI_FILE,
+                 profiles_list=None,
                  ):
         """Initializes the configuration with default values.
 
@@ -79,9 +78,9 @@ class WallConfigurator(object):
             build_rate          : The rate of building the wall (feet per day)
             num_workers         : The number of workers
             cpu_worktime        : The CPU work time (in seconds)
-            profiles            : The list of profiles
-            log_file            : The log file
-            ini_file            : The INI file
+            profiles_list         : The list of profiles
+            log_filepath            : The log file
+            ini_filepath            : The INI file
         """
 
         # Construction
@@ -96,11 +95,11 @@ class WallConfigurator(object):
         self.cpu_worktime = cpu_worktime
 
         # Profiles
-        self.profiles = profiles or []
+        self.profiles_list = profiles_list or []
 
         # Data storage
-        self.log_file = log_file
-        self.ini_file = ini_file
+        self.log_file = log_filepath
+        self.ini_file = ini_filepath
 
     def __repr__(self):
         """Returns a string representation of the configuration."""
@@ -113,13 +112,13 @@ class WallConfigurator(object):
             f"build_rate={self.build_rate}, "
             f"num_workers={self.num_workers}, "
             f"cpu_worktime={self.cpu_worktime}, "
-            f"profiles={self.profiles}, "
+            f"profiles={self.profiles_list}, "
             f"log_file={self.log_file}, "
             f"ini_file={self.ini_file})"
         )
 
     @classmethod
-    def from_ini(cls, file_path=INI_FILE):
+    def from_ini(cls, file_path=DEFAULT_INI_FILE):
         """Creates a configuration object from an INI file.
 
         Args:
@@ -172,7 +171,7 @@ class WallConfigurator(object):
             data = parser['Profiles']
             for key in data:
                 # Convert the string to a list of integers
-                config.profiles.append([int(x) for x in key.split()])
+                config.profiles_list.append([int(x) for x in key.split()])
 
         except ValueError as e:
             raise BuilderConfigError(
@@ -182,7 +181,7 @@ class WallConfigurator(object):
         # Return the configurator instance
         return config
 
-    def to_ini(self, file_path=INI_FILE):
+    def to_ini(self, file_path=DEFAULT_INI_FILE):
         """Writes the configuration to an INI file.
 
         Args:
@@ -229,8 +228,13 @@ class WallConfigurator(object):
             try:
                 # Manually write the Profiles section
                 file_path.write('[Profiles]\n')
-                for profile in self.profiles:
-                    file_path.write(f"{profile}\n")
+                for profile in self.profiles_list:
+
+                    # Convert the list of integers to a string
+                    line = ' '.join([str(x) for x in profile])
+
+                    # Write the line to the file
+                    file_path.write(f'{line}\n')
 
             except Exception as e:
                 raise BuilderConfigError(
