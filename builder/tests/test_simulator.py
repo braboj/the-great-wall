@@ -294,59 +294,59 @@ class TestWallManager(TestCase):
         # Check the config list is set
         self.assertEqual(manager.config_list, config_list)
 
-    # def test_is_ready(self):
-    #
-    #     # Define the config list
-    #     config_list = [[1, 2], [3, ]]
-    #
-    #     # Initialize the manager
-    #     manager = WallManager(config_list)
-    #
-    #     # Check the manager is not ready
-    #     self.assertFalse(manager.is_ready())
-    #
-    #     # Build until the target height is reached
-    #     manager.build(days=30)
-    #
-    #     # Check the manager is ready
-    #     self.assertTrue(manager.is_ready())
+    def test_is_ready(self):
 
-    # def test_get_ice(self):
-    #
-    #     # Define the config list
-    #     config_list = [[29, 29], [29, ]]
-    #
-    #     # Define the expected result
-    #     expected_ice = 3 * (TARGET_HEIGHT - 29) * VOLUME_ICE_PER_FOOT
-    #
-    #     # Create the manager
-    #     manager = WallManager(config_list)
-    #
-    #     # Build for one day
-    #     manager.build(days=1)
-    #
-    #     # Check the total ice is correct
-    #     self.assertEqual(manager.get_ice(), expected_ice)
+        # Define the config list
+        config_list = [[1, 2], [3, ]]
 
-    # def test_get_cost(self):
-    #
-    #     # Define the config list
-    #     config_list = [[29, 29], [29, ]]
-    #
-    #     # Define the expected result
-    #     expected_cost = (3 * (TARGET_HEIGHT - 29) *
-    #                      VOLUME_ICE_PER_FOOT *
-    #                      COST_PER_VOLUME
-    #                      )
-    #
-    #     # Create the manager
-    #     manager = WallManager(config_list)
-    #
-    #     # Build for one day
-    #     manager.build(days=1)
-    #
-    #     # Check the total cost is correct
-    #     self.assertEqual(manager.get_cost(), expected_cost)
+        # Initialize the manager
+        manager = WallManager(config_list)
+
+        # Check the manager is not ready
+        self.assertFalse(manager.is_ready())
+
+        # Build until the target height is reached
+        manager.build(days=30)
+
+        # Check the manager is ready
+        self.assertTrue(manager.is_ready())
+
+    def test_get_ice(self):
+
+        # Define the config list
+        config_list = [[29, 29], [29, ]]
+
+        # Define the expected result
+        expected_ice = 3 * (TARGET_HEIGHT - 29) * VOLUME_ICE_PER_FOOT
+
+        # Create the manager
+        manager = WallManager(config_list)
+
+        # Build for one day
+        manager.build(days=1)
+
+        # Check the total ice is correct
+        self.assertEqual(manager.get_ice(), expected_ice)
+
+    def test_get_cost(self):
+
+        # Define the config list
+        config_list = [[29, 29], [29, ]]
+
+        # Define the expected result
+        expected_cost = (3 * (TARGET_HEIGHT - 29) *
+                         VOLUME_ICE_PER_FOOT *
+                         COST_PER_VOLUME
+                         )
+
+        # Create the manager
+        manager = WallManager(config_list)
+
+        # Build for one day
+        manager.build(days=1)
+
+        # Check the total cost is correct
+        self.assertEqual(manager.get_cost(), expected_cost)
 
     def test_build(self):
 

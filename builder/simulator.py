@@ -1,5 +1,5 @@
 # encoding: utf-8
-from multiprocessing import Process, Pool, Queue, current_process, JoinableQueue
+from multiprocessing import Process, Pool, Queue, current_process
 from abc import ABC, abstractmethod
 from rootdir import ROOT_DIR
 from builder.errors import *
@@ -9,7 +9,6 @@ import logging
 import logging.handlers
 import time
 import os
-import math
 
 # Constants
 LOG_FILE = os.path.join(ROOT_DIR, 'data', 'wall_progress.log')
@@ -19,9 +18,9 @@ class LogListener(Process):
     """Process that listens for log messages on a queue.
 
     Attributes:
-        queue (Queue)       : A queue to receive log messages.
-        logfile (str)       : The name of the log file.
-        root_log (Logger)   : The root logger.
+        queue (Queue)   : A queue to receive log messages.
+        logfile (str)   : The name of the log file.
+        log (Logger)    : The root logger.
     """
 
     def __init__(self, queue, logfile=LOG_FILE):
@@ -42,7 +41,7 @@ class LogListener(Process):
         self.logfile = logfile
 
         # Get the root logger
-        self.root_log = logging.getLogger()
+        self.log = logging.getLogger()
 
     def configure(self):
         """Configure the listener process to log to a file."""
@@ -68,8 +67,8 @@ class LogListener(Process):
         console_handler.setFormatter(formatter)
 
         # Add the handlers to the root logger
-        self.root_log.addHandler(file_handler)
-        self.root_log.addHandler(console_handler)
+        self.log.addHandler(file_handler)
+        self.log.addHandler(console_handler)
 
     def stop(self):
         """Stop the log listener process."""
@@ -146,11 +145,11 @@ class WallSection(WallBuilderAbc):
     """Represents a section of a wall.
 
     Attributes:
-        section_id (int): The name of the wall section.
-        profile_id (int): The profile ID of the wall section.
-        start_height (int): The starting height of the wall section.
+        section_id (int)    : The name of the wall section.
+        profile_id (int)    : The profile ID of the wall section.
+        start_height (int)  : The starting height of the wall section.
         current_height (int): The current height of the wall section.
-        log (Logger): The logger for the wall section.
+        log (Logger)        : The logger for the wall section.
     """
 
     def __init__(self, section_id, profile_id=None, start_height=0):
@@ -169,7 +168,7 @@ class WallSection(WallBuilderAbc):
         self.current_height = start_height
 
         # Set the logger for the wall builder
-        self.log = logging.getLogger()
+        self.log = logging.getLogger(self.__class__.__name__)
         self.log.addHandler(logging.NullHandler())
 
     def __eq__(self, other):
@@ -217,8 +216,8 @@ class WallSection(WallBuilderAbc):
         the attributes are not of the correct type or value.
 
         Raises:
-            TypeError: If the data types of the attributes are incorrect.
-            ValueError: If the values of the attributes are incorrect.
+            TypeError   : If the data types of the attributes are incorrect.
+            ValueError  : If the values of the attributes are incorrect.
         """
 
         # ----------------------------------------------------------------------
@@ -271,24 +270,24 @@ class WallSection(WallBuilderAbc):
         """Configures the wall section to log to a queue.
 
         This method configures the wall section to log messages to a queue
-        instead of the console. It creates a QueueHandler and adds it to the
-        root logger.
+        instead of the console. It creates a QueueHandler using a shared
+        queue and adds it to the root logger for this process.
 
         Args:
             queue (Queue): A queue to receive log messages
         """
 
         # Get the root logger
-        root_log = logging.getLogger()
+        log = logging.getLogger()
 
         # Create a QueueHandler to send log messages to a queue
         handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
-        root_log.addHandler(handler)
+        log.addHandler(handler)
 
         # Set the log level for the root logger
-        root_log.setLevel(logging.INFO)
+        log.setLevel(logging.INFO)
 
     def build(self):
         """Increment the section height with the build rate (foot/day).
@@ -335,8 +334,8 @@ class WallProfile(WallBuilderAbc):
         """Initializes the wall profile.
 
         Args:
-            profile_id (int): The profile ID of the wall profile.
-            sections (list): A list of wall sections in the profile.
+            profile_id (int)    : The profile ID of the wall profile.
+            sections (list)     : A list of wall sections in the profile.
         """
 
         # Set the instance attributes
@@ -420,7 +419,7 @@ class WallProfile(WallBuilderAbc):
             )
 
         # Check that all section elements are WallSection objects
-        if not all(isinstance(section, WallSection) for section in self.sections):
+        if not all(isinstance(s, WallSection) for s in self.sections):
             raise BuilderValidationError(
                 info='All sections must be WallSection objects'
             )
@@ -436,24 +435,24 @@ class WallProfile(WallBuilderAbc):
         """Configures the wall section to log to a queue.
 
         This method configures the wall profile to log messages to a queue
-        instead of the console. It creates a QueueHandler and adds it to the
-        root logger.
+        instead of the console. It creates a QueueHandler using a shared queue
+        and adds it to the root logger for this process.
 
         Args:
             queue (Queue): A queue to receive log messages.
         """
 
         # Get the root logger
-        root_log = logging.getLogger()
+        log = logging.getLogger()
 
         # Create a QueueHandler to send log messages to a queue
         handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
-        root_log.addHandler(handler)
+        log.addHandler(handler)
 
         # Set the log level for the root logger
-        root_log.setLevel(logging.INFO)
+        log.setLevel(logging.INFO)
 
     def build(self):
         """Builds all sections in the wall profile by the build rate.
@@ -484,7 +483,6 @@ class WallManager(WallBuilderAbc):
         sections (list): A list of wall sections.
         log (Logger): The logger for the wall builder.
         log_queue (Queue): A queue to receive log messages.
-        log_listener (LogListener): A process to listen for log messages.
     """
 
     def __init__(self, config_list):
@@ -505,9 +503,6 @@ class WallManager(WallBuilderAbc):
 
         # Create the log queue to receive log messages
         self.log_queue = Queue()
-
-        # Create the log listener process
-        # self.log_listener = LogListener(self.log_queue)
 
         # Parse the configuration list
         self.parse_config_list()
@@ -569,8 +564,6 @@ class WallManager(WallBuilderAbc):
     def get_profile(self, profile_id):
         """Get a profile by its ID.
 
-        This method returns a wall profile by its ID.
-
         Args:
             profile_id (int): The profile ID of the wall profile.
 
@@ -583,8 +576,6 @@ class WallManager(WallBuilderAbc):
 
     def get_section(self, section_id):
         """Get a section by its ID.
-
-        This method returns a wall section by its ID.
 
         Args:
             section_id (int): The section ID of the wall section.
@@ -658,7 +649,7 @@ class WallManager(WallBuilderAbc):
         # Set the name of the current process
         current_process().name = 'Manager'
 
-        # Get the logger for the wall builder
+        # Get the root logger for the wall builder
         log = logging.getLogger()
 
         # Create a QueueHandler to send log messages to a queue
@@ -670,7 +661,7 @@ class WallManager(WallBuilderAbc):
         # Set the log level for the root logger
         log.setLevel(logging.INFO)
 
-    def build(self, days=None, num_teams=None):
+    def build(self, days=1, num_teams=5):
         """Build the wall using a pool of workers.
 
         This method builds the wall using a pool of workers. The workers are
@@ -679,72 +670,69 @@ class WallManager(WallBuilderAbc):
         instance.
 
         Args:
-            days (int): The number of days to build the wall.
-            num_teams (int): The number of construction teams.
+            days (int)      : The number of days to build the wall.
+            num_teams (int) : The number of construction teams.
 
         Returns:
             WallManager: The updated wall builder instance.
         """
 
-        log_listener = LogListener(self.log_queue)
-
         # Start the log listener process
+        log_listener = LogListener(self.log_queue)
         log_listener.start()
 
-        # Configure the wall builder to log to the queue
-        self.prepare(self.log_queue)
+        try:
 
-        # Check if construction teams are specified
-        if num_teams is None:
-            num_teams = len(self.sections)
+            # Configure the wall manager to log to the queue
+            self.prepare(self.log_queue)
 
-        # Calculate the days and roundup to the nearest integer
-        if days is None:
-            days = math.ceil(TARGET_HEIGHT / BUILD_RATE)
+            # Create a pool of workers
+            pool = Pool(
+                processes=num_teams,
+                initializer=WallSection.prepare,
+                initargs=(self.log_queue,),
+            )
 
-        # Create a pool of workers
-        pool = Pool(
-            processes=num_teams,
-            initializer=WallSection.prepare,
-            initargs=(self.log_queue,),
-        )
+            # Save the start timestamp
+            start_time = time.time()
 
-        # Start the timer
-        start_time = time.time()
+            # Build the wall
+            for day in range(days):
 
-        # Build the wall
-        for day in range(days):
+                # Check if all sections are ready
+                if self.is_ready():
+                    break
 
-            # Check if all sections are ready
-            if self.is_ready():
-                break
+                self.log.info(f"@ Calculation Distribution Day {day + 1}")
 
-            self.log.info(f"@ Calculation Distribution Day {day + 1}")
+                # Map a section from a profile to a worker
+                self.sections = pool.map(WallSection.build, self.sections)
 
-            # Map a section from a profile to a worker
-            self.sections = pool.map(WallSection.build, self.sections)
+            # No more work to be done
+            pool.close()
+            pool.join()
 
-        # No more work to be done
-        pool.close()
-        pool.join()
+            # Save the end timestamp
+            end_time = time.time()
 
-        # End the timer
-        end_time = time.time()
+            # Log the results
+            self.report(start_time=start_time, end_time=end_time)
 
-        # Log the results
-        self.report(start_time=start_time, end_time=end_time)
+            # Update the profiles
+            self.update_profiles()
 
-        # Update the profiles
-        self.update_profiles()
+        except Exception as e:
+            raise BuilderError(f"An error occurred: {e}")
 
-        # Stop the listener process
-        log_listener.stop()
+        finally:
+            log_listener.stop()
 
         # Return the updated wall builder
         return self
 
 
 def main():
+    """Main function for testing the wall classes."""
 
     # Define the wall configuration
     # config_list = [
