@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from builder.simulator import *
 from django.apps import apps
 
+
 def home(request):
     return HttpResponse('Hello, World!')
 
@@ -61,7 +62,7 @@ def get_profile_overview(request, profile_id, day_id):
     try:
         builder = WallManager(config_list)
         builder.build(num_teams=num_teams, days=day_id)
-        profile = builder.profiles[profile_id-1]
+        profile = builder.get_profile(profile_id-1)
 
     except Exception as e:
         print(e)
@@ -84,7 +85,7 @@ def get_day_data(request, profile_id, day_id):
     try:
         builder = WallManager(config_list)
         builder.build(num_teams=num_teams, days=day_id)
-        profile = builder.profiles[profile_id-1]
+        profile = builder.get_profile(profile_id-1)
 
     except Exception as e:
         print(e)
