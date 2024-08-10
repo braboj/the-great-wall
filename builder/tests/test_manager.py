@@ -1,5 +1,5 @@
 from unittest import TestCase
-from builder.simulator import *
+from builder.manager import *
 from builder.errors import *
 from builder.defines import *
 

@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from builder.simulator import *
+from builder.manager import *
 from django.apps import apps
 
 
