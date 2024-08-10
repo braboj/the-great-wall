@@ -1,4 +1,5 @@
 # encoding: utf-8
+import json
 from abc import ABC, abstractmethod
 from builder.errors import BuilderConfigError
 from pathlib import Path
@@ -11,13 +12,13 @@ DEFAULT_INI_FILE = 'config.ini'
 # in the user's code. The WallConfigurator class provides a single point of
 # access to the configuration data.
 
-_VOLUME_ICE_PER_FOOT_ = 195   # Material consumption per foot
-_COST_PER_VOLUME_ = 1900      # Cost of material per volume
-_TARGET_HEIGHT_ = 30          # Fixed height of the wall
-_SIMULATION_TIME_ = 0.01      # Simulated CPU work
-_MAX_SECTION_COUNT_ = 2000    # Maximum number of sections
-_MAX_WORKERS_ = 20            # Maximum number of workers
-_BUILD_RATE_ = 1              # Feet per day
+_VOLUME_ICE_PER_FOOT_ = 195  # Material consumption per foot
+_COST_PER_VOLUME_ = 1900  # Cost of material per volume
+_TARGET_HEIGHT_ = 30  # Fixed height of the wall
+_SIMULATION_TIME_ = 0.01  # Simulated CPU work
+_MAX_SECTION_COUNT_ = 2000  # Maximum number of sections
+_MAX_WORKERS_ = 20  # Maximum number of workers
+_BUILD_RATE_ = 1  # Feet per day
 
 
 class ConfiguratorAbc(ABC):
@@ -49,11 +50,9 @@ class WallConfigurator(object):
         target_height       : The target height of the wall (in feet)
         max_section_count   : The maximum number of sections
         build_rate          : The rate of building the wall (in feet per hour)
-        num_workers         : The number of workers
+        num_teams         : The number of workers
         cpu_worktime        : The CPU work time (in seconds)
-        profile_list            : The list of profiles
-        log_file            : The log file
-        ini_file            : The INI file
+        profiles        : The list of profiles
     """
 
     def __init__(self,
@@ -62,11 +61,9 @@ class WallConfigurator(object):
                  target_height=30,
                  max_section_count=2000,
                  build_rate=1,
-                 num_workers=20,
+                 num_teams=20,
                  cpu_worktime=0.01,
-                 log_filepath=DEFAULT_LOG_FILE,
-                 ini_filepath=DEFAULT_INI_FILE,
-                 profile_list=None,
+                 profiles=None,
                  ):
         """Initializes the configuration with default values.
 
@@ -76,11 +73,9 @@ class WallConfigurator(object):
             target_height       : The target height of the wall (in feet)
             max_section_count   : The maximum number of sections
             build_rate          : The rate of building the wall (feet per day)
-            num_workers         : The number of workers
+            num_teams           : The number of workers
             cpu_worktime        : The CPU work time (in seconds)
-            profile_list         : The list of profiles
-            log_filepath            : The log file
-            ini_filepath            : The INI file
+            profiles            : The list of profiles
         """
 
         # Construction
@@ -91,15 +86,11 @@ class WallConfigurator(object):
         self.build_rate = build_rate
 
         # Task
-        self.num_workers = num_workers
+        self.num_teams = num_teams
         self.cpu_worktime = cpu_worktime
 
         # Profiles
-        self.profile_list = profile_list or []
-
-        # Data storage
-        self.log_file = log_filepath
-        self.ini_file = ini_filepath
+        self.profiles = profiles or []
 
     def __repr__(self):
         """Returns a string representation of the configuration."""
@@ -110,12 +101,33 @@ class WallConfigurator(object):
             f"target_height={self.target_height}, "
             f"max_section_count={self.max_section_count}, "
             f"build_rate={self.build_rate}, "
-            f"num_workers={self.num_workers}, "
+            f"num_workers={self.num_teams}, "
             f"cpu_worktime={self.cpu_worktime}, "
-            f"profiles={self.profile_list}, "
-            f"log_file={self.log_file}, "
-            f"ini_file={self.ini_file})"
+            f"profiles={self.profiles}, "
         )
+
+    def get_params(self):
+
+        return {
+            'volume_ice_per_foot': self.volume_ice_per_foot,
+            'cost_per_volume': self.cost_per_volume,
+            'target_height': self.target_height,
+            'max_section_count': self.max_section_count,
+            'build_rate': self.build_rate,
+            'num_teams': self.num_teams,
+            'cpu_worktime': self.cpu_worktime,
+            'profiles': self.profiles,
+        }
+
+    def set_params(self, params):
+        self.volume_ice_per_foot = params.get('volume_ice_per_foot', _VOLUME_ICE_PER_FOOT_)
+        self.cost_per_volume = params.get('cost_per_volume', _COST_PER_VOLUME_)
+        self.target_height = params.get('target_height', _TARGET_HEIGHT_)
+        self.max_section_count = params.get('max_section_count', _MAX_SECTION_COUNT_)
+        self.build_rate = params.get('build_rate', _BUILD_RATE_)
+        self.num_teams = params.get('num_teams', _MAX_WORKERS_)
+        self.cpu_worktime = params.get('cpu_worktime', _SIMULATION_TIME_)
+        self.profiles = params.get('profiles', [])
 
     @classmethod
     def from_ini(cls, file_path=DEFAULT_INI_FILE):
@@ -158,7 +170,7 @@ class WallConfigurator(object):
         # Try to get the values from the section
         try:
             data = parser['Task']
-            config.num_workers = data.getint('NUM_WORKERS')
+            config.num_teams = data.getint('NUM_WORKERS')
             config.cpu_worktime = data.getfloat('CPU_WORKTIME')
 
         except ValueError as e:
@@ -171,7 +183,7 @@ class WallConfigurator(object):
             data = parser['Profiles']
             for key in data:
                 # Convert the string to a list of integers
-                config.profile_list.append([int(x) for x in key.split()])
+                config.profiles.append([int(x) for x in key.split()])
 
         except ValueError as e:
             raise BuilderConfigError(
@@ -211,7 +223,7 @@ class WallConfigurator(object):
         try:
             parser.add_section('Task')
             task = parser['Task']
-            task['NUM_WORKERS'] = str(self.num_workers)
+            task['NUM_WORKERS'] = str(self.num_teams)
             task['CPU_WORKTIME'] = str(self.cpu_worktime)
 
         except Exception as e:
@@ -228,8 +240,7 @@ class WallConfigurator(object):
             try:
                 # Manually write the Profiles section
                 file_path.write('[Profiles]\n')
-                for profile in self.profile_list:
-
+                for profile in self.profiles:
                     # Convert the list of integers to a string
                     line = ' '.join([str(x) for x in profile])
 
@@ -253,15 +264,15 @@ def main():
     print(config)
 
     # Change the configuration
-    before = config.num_workers
-    config.num_workers += 1
+    before = config.num_teams
+    config.num_teams += 1
 
     # Write the configuration file
     config.to_ini()
 
     # Read the configuration file again
     config = WallConfigurator.from_ini()
-    after = config.num_workers
+    after = config.num_teams
 
     # Print the configuration
     print('After:')

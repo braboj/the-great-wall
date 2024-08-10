@@ -505,7 +505,7 @@ class WallManager(WallBuilderAbc):
     # All instances must share the same configuration
     config = WallConfigurator()
 
-    def __init__(self):
+    def __init__(self, log_filepath='wall.log'):
         """Initializes the wall builder."""
 
         # Set the instance attributes
@@ -513,6 +513,7 @@ class WallManager(WallBuilderAbc):
         self.sections = []
 
         # Set the logger for the wall builder
+        self.log_filepath = log_filepath
         self.log = logging.getLogger()
         self.log.addHandler(logging.NullHandler())
 
@@ -539,9 +540,9 @@ class WallManager(WallBuilderAbc):
         section_id = 0
 
         # Parse the sections and profiles from the configuration list
-        for row in self.config.profile_list:
+        for row in self.config.profiles:
 
-            profile_id = self.config.profile_list.index(row)
+            profile_id = self.config.profiles.index(row)
             profile = WallProfile(profile_id=profile_id)
 
             # Extract the sections from the row
@@ -566,7 +567,7 @@ class WallManager(WallBuilderAbc):
         """
 
         # Set the profiles and sections
-        self.config.profile_list = profiles_list
+        self.config.profiles = profiles_list
 
     def update_profiles(self):
         """Update the profiles after calculations.
@@ -641,7 +642,7 @@ class WallManager(WallBuilderAbc):
         the attributes are not of the correct type or value.
         """
 
-        profiles_list = self.config.profile_list
+        profiles_list = self.config.profiles
 
         # Check that config_list is a list
         if not isinstance(profiles_list, list):
@@ -709,7 +710,7 @@ class WallManager(WallBuilderAbc):
         # Start the log listener process
         log_listener = LogListener(
             queue=self.log_queue,
-            logfile=self.config.log_file
+            logfile=self.log_filepath
         )
         log_listener.start()
 
@@ -762,6 +763,7 @@ class WallManager(WallBuilderAbc):
         finally:
             log_listener.stop()
 
+
         # Return the updated wall builder
         return self
 
@@ -776,18 +778,18 @@ def main():
     # ]
 
     config_list = [
-        [21, 25, 28],
-        [17],
-        [17, 22, 17, 19, 17, ]
+        [1, 1, 1],
+        [1],
+        [1, 1, 1, 1, 1, ]
     ]
 
     config = WallConfigurator(
-        profile_list=config_list,
+        profiles=config_list,
     )
 
     # Create a wall builder
     builder = WallManager.set_config(config)
-    builder.build(num_teams=20, days=1)
+    builder.build(num_teams=1, days=1)
     # builder.build(num_teams=20, days=1)
     # builder.build(num_teams=20, days=1)
 
