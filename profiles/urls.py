@@ -18,7 +18,6 @@ Including another URLconf
 from django.urls import path
 from profiles import views
 
-
 # Examples:
 # GET /profiles/overview/
 # GET /profiles/overview/1/
@@ -32,18 +31,41 @@ app_name = "profiles"
 urlpatterns = [
 
     # Index
-    path('', views.index, name='index'),
+    path(route='',
+         view=views.index,
+         name='index'),
 
-    # Daily Status Endpoints
-    path('<int:profile_id>/days/<int:day_id>/', views.get_day_data),
+    path(route='overview/',
+         view=views.get_overall_overview,
+         name='get_overall_overview'
+         ),
+
+    path(route='overview/<int:day_id>/',
+         view=views.get_day_overview,
+         name='get_day_overview'
+         ),
 
     # Overview Endpoints
-    path('<int:profile_id>/overview/<int:day_id>/', views.get_profile_overview),
-    path('overview/<int:day_id>/', views.get_day_overview),
-    path('overview/', views.get_overall_overview),
+    path(route='<int:profile_id>/overview/<int:day_id>/',
+         view=views.get_profile_overview,
+         name='get_profile_overview'
+         ),
+
+    # Daily Status Endpoints
+    path(route='<int:profile_id>/days/<int:day_id>/',
+         view=views.get_day_data,
+         name='get_day_data'
+         ),
+
+    path(route='logs/',
+         view=views.get_logs,
+         name='get_logs'
+         ),
 
     # Configuration Endpoints
-    path('config/', views.handle_config),
-
+    path(route='config/',
+         view=views.handle_config,
+         name='handle_config'
+         ),
 
 ]
