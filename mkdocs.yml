@@ -7,8 +7,12 @@ nav:
     - Project:
       - Home: index.md
       - Problem Statement: problem.md
+      - Requirements: analysis.md
       - Solution Journal : solution.md
       - REST API Reference: rest_api.md
+      - Clarification List: questions.md
+      - Backlog: backlog.md
+
 
 plugins:
 - search
