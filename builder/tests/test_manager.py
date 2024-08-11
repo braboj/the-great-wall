@@ -12,7 +12,7 @@ from builder.configurator import (
 class TestWallSection(TestCase):
 
     def setUp(self):
-        self.section = WallSection(0)
+        self.section = SectionBuilder(0)
 
     def test_init(self):
 
@@ -99,14 +99,14 @@ class TestWallSection(TestCase):
         # Test the validation of the start height
 
         # Set the start height to valid values
-        section = WallSection(section_id=1, start_height=0)
+        section = SectionBuilder(section_id=1, start_height=0)
         test_values = [0, _TARGET_HEIGHT_]
         for value in test_values:
             section.start_height = value
             section.validate()
 
         # Set the start height to invalid types
-        section = WallSection(section_id=1, start_height=0)
+        section = SectionBuilder(section_id=1, start_height=0)
         test_values = [None, 'a', -1, 31, 1.0, complex(1, 1)]
         for value in test_values:
             with self.assertRaises(BuilderValidationError):
@@ -119,14 +119,14 @@ class TestWallSection(TestCase):
         # Test the validation of the section-id
 
         # Set the section-id to valid values
-        section = WallSection(section_id=1, start_height=0)
+        section = SectionBuilder(section_id=1, start_height=0)
         test_values = [0, 1, 2, 3]
         for value in test_values:
             section.section_id = value
             section.validate()
 
         # Set the section-id to invalid values
-        section = WallSection(section_id=1, start_height=0)
+        section = SectionBuilder(section_id=1, start_height=0)
         test_values = [None, -1, 'a', 1.0, complex(1, 1)]
         for value in test_values:
             with self.assertRaises(BuilderValidationError):
@@ -139,14 +139,14 @@ class TestWallSection(TestCase):
         # Test the validation of the profile-id
 
         # Set the section-id to valid values
-        section = WallSection(section_id=1, start_height=0)
+        section = SectionBuilder(section_id=1, start_height=0)
         test_values = [None, 0, 1]
         for value in test_values:
             section.profile_id = value
             section.validate()
 
         # Set the section-id to invalid values
-        section = WallSection(section_id=1, start_height=0)
+        section = SectionBuilder(section_id=1, start_height=0)
         test_values = ['a', -1, 1.0, complex(1, 1)]
         for value in test_values:
             with self.assertRaises(BuilderValidationError):
@@ -157,8 +157,8 @@ class TestWallSection(TestCase):
 class TestWallProfile(TestCase):
 
     def setUp(self):
-        self.sections = [WallSection(i) for i in range(3)]
-        self.profile = WallProfile(profile_id=1, sections=self.sections)
+        self.sections = [SectionBuilder(i) for i in range(3)]
+        self.profile = ProfileBuilder(profile_id=1, sections=self.sections)
 
     def test_init(self):
 
@@ -249,14 +249,14 @@ class TestWallProfile(TestCase):
     def test_validate_profile_id(self):
 
         # Set the profile-id to valid values
-        profile = WallProfile(profile_id=1, sections=self.sections)
+        profile = ProfileBuilder(profile_id=1, sections=self.sections)
         test_values = [0, 1]
         for value in test_values:
             profile.name = value
             profile.validate()
 
         # Set the profile-id to invalid types
-        profile = WallProfile(profile_id=1, sections=self.sections)
+        profile = ProfileBuilder(profile_id=1, sections=self.sections)
         test_values = [None, 'a', -1, 1.0, complex(1, 1)]
         for value in test_values:
             with self.assertRaises(BuilderValidationError):
@@ -266,14 +266,14 @@ class TestWallProfile(TestCase):
     def test_validate_sections(self):
 
         # Set the sections to valid values
-        profile = WallProfile(profile_id=1, sections=self.sections)
-        test_values = [[WallSection(0)], [WallSection(0), WallSection(1)]]
+        profile = ProfileBuilder(profile_id=1, sections=self.sections)
+        test_values = [[SectionBuilder(0)], [SectionBuilder(0), SectionBuilder(1)]]
         for value in test_values:
             profile.sections = value
             profile.validate()
 
         # Set the sections to invalid types
-        profile = WallProfile(profile_id=1, sections=self.sections)
+        profile = ProfileBuilder(profile_id=1, sections=self.sections)
         test_values = [None, 1, 1.0, complex(1, 1)]
         for value in test_values:
             with self.assertRaises(BuilderValidationError):
@@ -281,8 +281,8 @@ class TestWallProfile(TestCase):
                 profile.validate()
 
         # Set the sections to invalid size
-        profile = WallProfile(profile_id=1, sections=self.sections)
-        test_values = [[], [WallSection(0)] * (_MAX_SECTION_COUNT_ + 1)]
+        profile = ProfileBuilder(profile_id=1, sections=self.sections)
+        test_values = [[], [SectionBuilder(0)] * (_MAX_SECTION_COUNT_ + 1)]
         for value in test_values:
             with self.assertRaises(BuilderValidationError):
                 profile.sections = value
