@@ -799,10 +799,10 @@ class WallManager(WallBuilderAbc):
         """
         # ----------------------------------------------------------------------
         # Create a QueueHandler to send log messages to a queue
-        # handler = logging.handlers.QueueHandler(queue)
+        handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
-        # log.addHandler(handler)
+        log.addHandler(handler)
         # ----------------------------------------------------------------------
 
         # Set the log level for the root logger
@@ -851,14 +851,11 @@ class WallManager(WallBuilderAbc):
                 if self.is_ready():
                     break
 
-                # Build each section in the wall profile
-                for section in self.sections:
-                    if not section.is_ready():
-                        pool.apply_async(
-                            section.build,
-                            args=(days,),
-                            error_callback=self.log.exception
-                        )
+                # Map a section from a profile to a worker
+                self.sections = pool.starmap(
+                    func=WallSection.build,
+                    iterable=[(section, days) for section in self.sections]
+                )
 
             # No more work to be done
             pool.close()
