@@ -799,10 +799,10 @@ class WallManager(WallBuilderAbc):
         """
         # ----------------------------------------------------------------------
         # Create a QueueHandler to send log messages to a queue
-        handler = logging.handlers.QueueHandler(queue)
+        # handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
-        log.addHandler(handler)
+        # log.addHandler(handler)
         # ----------------------------------------------------------------------
 
         # Set the log level for the root logger
