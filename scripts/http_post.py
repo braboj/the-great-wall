@@ -12,7 +12,7 @@ import requests
 # }
 
 # Endpoint URL
-url = 'http://127.0.0.1:8000/profiles/config/'
+url = 'http://127.0.0.1:8080/profiles/config/'
 
 # Sample data
 data = {
