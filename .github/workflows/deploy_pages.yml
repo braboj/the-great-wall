@@ -1,6 +1,9 @@
 # Simple workflow for deploying static content to GitHub Pages
 name: Deploy Pages
+
+# Controls when the action will run.
 on:
+
   # Trigger the deployment manually
   workflow_dispatch:
 
