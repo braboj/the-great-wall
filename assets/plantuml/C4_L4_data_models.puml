@@ -14,16 +14,12 @@ entity WallSection {
     +profile_id: Integer
     +name: String
     +start_height: Integer
-    +current_height: Integer
-    +ice: Integer
-    +cost: Integer
 }
 
 ' Define Team entity
 entity Team {
     +id: Integer
     --
-    +section_id: Integer
     +name: String
 }
 
@@ -33,6 +29,7 @@ entity WorkLog {
     --
     +section_id: Integer
     +team_id: Integer
+    +current_height: Integer
     +day: Integer
     +ice: Integer
     +cost: Integer
@@ -40,9 +37,8 @@ entity WorkLog {
 
 ' Define relationships
 WallProfile "1" -- "1..*" WallSection : contains
-WallSection "1" -- "1" Team : assigned to
-WallSection "1..*" -- "1" WorkLog : logged in
-Team "1..*" -- "1" WorkLog : logged in
+WallSection "1..*" -- "1" WorkLog : part of
+Team "1..*" -- "1" WorkLog : part of
 
 
 
