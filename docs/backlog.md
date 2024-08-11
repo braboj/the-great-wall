@@ -9,3 +9,4 @@
 - Check complex multi-container Django solutions and how to manage them
 - Check the browsable API from the Django rest framework
 - Add the models to the solution and check the Django admin
+- Check the deprecated warnings for the github actions

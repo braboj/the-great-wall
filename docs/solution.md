@@ -603,9 +603,19 @@ Docker image to Docker Hub on every release.
 
 ## 9.1. Objectives
 
-- [ ] Pipeline to build the documentation and deploy it to GitHub Pages
+- [x] Pipeline to build the documentation and deploy it to GitHub Pages
 - [ ] Pipeline to run the tests on every push to the main branch
 - [ ] Pipeline to build and push the Docker image to Docker Hub
+
+## 9.2. Create the GitHub Actions to publish the documentation
+
+Create a new GitHub Actions workflow file in the `.github/workflows` directory.
+See the file [./.github/workflows/deploy_pages.yml](../.github/workflows/deploy_pages.yml).
+
+## 9.3. Create the GitHub Actions to run the tests
+
+Create a new GitHub Actions workflow file in the `.github/workflows` directory.
+See the file [./.github/workflows/run_tests.yml](../.github/workflows/run_tests.yml).
 
 
 ## . Review
