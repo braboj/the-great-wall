@@ -42,7 +42,7 @@ _Time spent: 1 hour_
 | CI/CD                | GitHub Actions            |
 | Documentation        | GitHub Pages, MkDocs      |
 
-## 2. Multi-Processing
+## 2. Multi-Processing in Python
 
 _Time spent: 7 hours for research, prototyping and implementation_
 
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 - https://pymotw.com/3/multiprocessing/index.html
 - https://docs.python.org/3/library/multiprocessing.html
 
-## 3. Consistent Logging
+## 3. Logging with Multiprocessing
 
 _Time spent: 2 hours for reading, prototyping and implementation_
 
@@ -196,7 +196,7 @@ Source:
 - https://docs.python.org/3/library/logging.handlers.html#queuehandler
 - https://github.com/getsentry/sentry-python
 
-## 4. Proof of concept
+## 4. Proof of Concept
 
 _Time spent: 4 hours for implementation and testing_
 
@@ -236,20 +236,20 @@ _Time spent: 4 hours for implementation_
 * [x] Define diagrams for the system (C4 model)
 * [x] Define the CI/CD pipeline
 
-### 5.2. Project Structure
+### 5.2. Define Project Structure
 
 - **assets/** - Contains the images, videos, and other assets used in the project.
 - **builder/** - Contains the main implementation of the solution.
   - **tests/** - Contains the tests for the implementation.
-- **config/** - Contains the configuration files for the project.
-  - **config.ini** - Contains the configuration settings for the project.
 - **data/** - Contains the data files for the project.
-  - **tracker.log** - Contains the log messages for the project. 
+  - **wall.ini** - Contains the configuration settings for the project.
+  - **wall.log** - Contains the log messages for the project. 
 - **docs/** - Contains the documentation for the project.
-- **tracker** - Django service to track the progress of the construction crews
+- **profiles/** - Django app to track the progress of the construction crews
 - **scripts/** - Contains the scripts used to automate tasks, prototypes, etc.
+- **wall-project/** - Contains the main settings for the project.
 
-### 5.3. Design Diagrams
+### 5.3. Create Design Diagrams
 
  - [ ] System Context
  - [ ] Containers
@@ -257,7 +257,7 @@ _Time spent: 4 hours for implementation_
  - [ ] Class Diagrams
  - [ ] Data Models
 
-### 5.4. CI/CD Pipeline
+### 5.4. Define CI/CD Pipeline
 
 - GitHub Actions to run the tests on every push to the main branch
 - GitHub Actions to build and push the Docker image to Docker Hub
@@ -270,7 +270,7 @@ _Time spent: 4 hours for implementation_
 
 ## 6. Django REST API
 
-_Time spent: 12 hours for implementation and testing_
+_Time spent: 20 hours for implementation and testing_
 
 ### 6.1. Objectives
 
@@ -279,7 +279,7 @@ _Time spent: 12 hours for implementation and testing_
 * [x] Add and route a 'Hello, World!' view
 * [x] Add the required views and route them
 * [x] Connect the views and the wall builder logic
-* [x] Improve the builder simulator
+* [x] Improve the builder manager
 * [ ] Allow configuration from the user
 * [ ] Test the views
 
@@ -344,7 +344,7 @@ urlpatterns = [
 ### 6.6. Add the required stub views and route them
 
 Add the required views that will just echo the input data. The views will 
-later connect to the wall builder simulator.
+later connect to the wall builder manager.
 
 ![django_route_profiles_overview.png](../assets/images/django_route_profiles_overview.png)
 ![profiles_overview_day.png](../assets/images/django_route_profiles_overview_1.png)
@@ -394,18 +394,21 @@ Result:
 - [Rest_API_routing_test.mp4](..%2Fassets%2Fvideos%2FRest_API_routing_test.mp4)
 
 
-### 6.8. Improve the builder simulator
+### 6.8. Improve the builder manager
 
 After the integration of the views with the builder logic, we will improve the
-builder simulator based on some issues found during the previous steps.
+builder manager based on some issues found during the previous steps.
 
 - [x] Update both sections and profiles after each calculation
 - [x] Add base exception class and extend the error hierarchy
 - [x] Add more unit tests to cover all relevant classes
+- [x] Extend the interface to new requirements during the development
+- [x] Resolve issue with the unit tests
+- [x] Document the code and update the diagrams
 
 > For unknown reasons, the unit tests are not working as expected. The tests are
 > passing, but after the tests something is not closed properly and the test 
-> runner hangs. Running the simulator multiple times does not show any 
+> runner hangs. Running the manager multiple times does not show any 
 > problems. The issue is not yet resolved.
 
 ### 6.9. Allow configuration from the user
@@ -414,7 +417,11 @@ builder simulator based on some issues found during the previous steps.
 - [x] WallConfigurator class that will import or export the wall configuration
 - [x] Extend the REST API to allow the user to configure the wall
 - [x] Handle the views with the Django REST framework
-- [ ] Provide unit tests for the views
+- [x] Add a route to get the wall log using the REST API
+- [x] Provide unit tests for the views
+
+The test coverage of the views will cover only basic positive and negative
+scenarios. The views will be tested with the Django test client.
 
 ### 6.11. References
 - https://simpleisbetterthancomplex.com/series/beginners-guide/1.11/

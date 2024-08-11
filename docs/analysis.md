@@ -65,6 +65,7 @@ The requirements are divided into three categories based on RFC 2119:
  
 ### 4.3. Output
 
+- `MUST` - Return JSON response for all endpoints, including errors
 - `MUST` - Provide an endpoint to get the daily status of the wall
 - `MUST` - Provide an endpoint to get the total cost of the wall
 - `MUST` - Provide an endpoint to get the cost of a specific profile
