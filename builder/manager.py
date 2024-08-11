@@ -309,7 +309,7 @@ class WallSection(WallBuilderAbc):
         # Set the log level for the root logger
         log.setLevel(logging.INFO)
 
-    def build(self):
+    def build(self, days=1):
         """Increment the section height with the build rate (foot/day).
 
         This method is part of a simulation process where each call to `build`
@@ -326,17 +326,24 @@ class WallSection(WallBuilderAbc):
         original_name = current_process().name
         current_process().name = f'Worker-{original_name.split("-")[-1]}'
 
-        # Build the wall until the desired height is reached
-        if self.current_height < self.config.target_height:
-            self.current_height += self.config.build_rate
-            self.day += 1
+        # Build the wall section
+        for day in range(days):
 
-        # Log the build progress
-        self.log.info(f'Added 1 foot to section {self.section_id} to reach'
-                      f' {self.current_height} feet on day {self.day}')
+            # Check if the section is ready
+            if self.is_ready():
+                break
 
-        # Simulate CPU work
-        time.sleep(self.config.cpu_worktime)
+            # Build the wall for the day
+            if self.current_height < self.config.target_height:
+                self.current_height += self.config.build_rate
+                self.day += 1
+
+                # Log the build progress
+                self.log.info(f'Added 1 foot to section {self.section_id} to reach'
+                              f' {self.current_height} feet on day {self.day}')
+
+            # Simulate CPU work
+            time.sleep(self.config.cpu_worktime)
 
         # Return the updated wall section
         return self
@@ -499,7 +506,7 @@ class WallProfile(WallBuilderAbc):
         # Set the log level for the root logger
         log.setLevel(logging.INFO)
 
-    def build(self):
+    def build(self, days=1):
         """Builds all sections in the wall profile by the build rate.
 
         This method builds each section in the wall profile by calling the
@@ -510,10 +517,17 @@ class WallProfile(WallBuilderAbc):
             WallProfile: The updated wall profile instance.
         """
 
-        # Build each section
-        for section in self.sections:
-            if not section.is_ready():
-                section.build()
+        # Build each section in the wall profile
+        for day in range(days):
+
+            # Check if all sections are ready
+            if self.is_ready():
+                break
+
+            # Build each section in the wall profile
+            for section in self.sections:
+                if not section.is_ready():
+                    section.build()
 
         # Return the updated wall profile
         return self
@@ -837,8 +851,14 @@ class WallManager(WallBuilderAbc):
                 if self.is_ready():
                     break
 
-                # Map a section from a profile to a worker
-                self.sections = pool.map(WallSection.build, self.sections)
+                # Build each section in the wall profile
+                for section in self.sections:
+                    if not section.is_ready():
+                        pool.apply_async(
+                            section.build,
+                            args=(days,),
+                            error_callback=self.log.exception
+                        )
 
             # No more work to be done
             pool.close()
@@ -884,7 +904,7 @@ def main():
 
     # Create a wall builder
     builder = WallManager.set_config(config)
-    builder.build(num_teams=1, days=30)
+    builder.build(num_teams=20, days=30)
     # builder.build(num_teams=20, days=30)
     # builder.build(num_teams=20, days=1)
 
