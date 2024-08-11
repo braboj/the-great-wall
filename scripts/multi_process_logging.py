@@ -1,26 +1,12 @@
-# You'll need these imports in your own code
 import logging
 import logging.handlers
 import multiprocessing
-
-# Next two import lines for this demo only
 from random import choice, random
 import time
 
 
-# Because you'll want to define the logging configurations for listener and
-# workers, the listener and worker process functions take a configurer
-# parameter which is a callable for configuring logging for that process.
-# These functions are also passed the queue, which they use for communication.
-#
-# In practice, you can configure the listener, however, you want, but note that
-# in this simple example, the listener does not apply level or filter logic
-# to receive records. In practice, you would probably want to do this logic
-# in the worker processes, to avoid sending events which would be filtered
-# out between processes.
-#
-# The size of the rotated files is made small so you can see the results easily.
 def listener_configurer():
+    """Configure logging for the listener process."""
     root = logging.getLogger()
     h = logging.handlers.RotatingFileHandler('mptest.log', 'a', 300, 10)
     f = logging.Formatter(
@@ -29,26 +15,21 @@ def listener_configurer():
     root.addHandler(h)
 
 
-# This is the listener process top-level loop: wait for logging events
-# (LogRecords)on the queue and handle them, quit when you get a None for a
-# LogRecord.
 def listener_process(queue, configurer):
+    """Listen for log records on the queue and handle them."""
     configurer()
     while True:
         try:
             record = queue.get()
-            if record is None:  # We send this as a sentinel to tell the listener to quit.
+            if record is None:  # Sentinel value to terminate
                 break
             logger = logging.getLogger(record.name)
-            logger.handle(
-                record)  # No level or filter logic applied - just do it!
+            logger.handle(record)  # Handle log record
         except Exception:
             import sys, traceback
             print('Whoops! Problem:', file=sys.stderr)
             traceback.print_exc(file=sys.stderr)
 
-
-# Arrays used for random selections in this demo
 
 LEVELS = [logging.DEBUG, logging.INFO, logging.WARNING,
           logging.ERROR, logging.CRITICAL]
@@ -62,49 +43,63 @@ MESSAGES = [
 ]
 
 
-# The worker configuration is done at the start of the worker process run.
-# Note that on Windows you can't rely on fork semantics, so each process
-# will run the logging configuration code when it starts.
 def worker_configurer(queue):
-    h = logging.handlers.QueueHandler(queue)  # Just the one handler needed
+    """Configure logging for worker processes."""
+    h = logging.handlers.QueueHandler(queue)
     root = logging.getLogger()
     root.addHandler(h)
-    # send all messages, for demo; no other level or filter logic applied.
     root.setLevel(logging.DEBUG)
 
 
-# This is the worker process top-level loop, which just logs ten events with
-# random intervening delays before terminating.
-# The print messages are just so you know it's doing something!
-def worker_process(queue, configurer):
-    configurer(queue)
+def worker_task(number):
+    """Function executed by each worker in the pool."""
     name = multiprocessing.current_process().name
-    print('Worker started: %s' % name)
-    for i in range(10):
+    print(f'Worker started: {number}')
+    for _ in range(10):
         time.sleep(random())
         logger = logging.getLogger(choice(LOGGERS))
         level = choice(LEVELS)
         message = choice(MESSAGES)
         logger.log(level, message)
-    print('Worker finished: %s' % name)
+    print(f'Worker finished: {name}')
 
 
-# Here's where the demo gets orchestrated. Create the queue, create and start
-# the listener, create ten workers and start them, wait for them to finish,
-# then send a None to the queue to tell the listener to finish.
+def main_thread_configurer(queue):
+    """Configure logging for the main thread."""
+    h = logging.handlers.QueueHandler(queue)
+    root = logging.getLogger()
+    root.addHandler(h)
+    root.setLevel(logging.DEBUG)
+
+
 def main():
     queue = multiprocessing.Queue(-1)
+
+    # Configure main thread logging
+    main_thread_configurer(queue)
+
+    # Start listener process
     listener = multiprocessing.Process(target=listener_process,
                                        args=(queue, listener_configurer))
     listener.start()
-    workers = []
-    for i in range(10):
-        worker = multiprocessing.Process(target=worker_process,
-                                         args=(queue, worker_configurer))
-        workers.append(worker)
-        worker.start()
-    for w in workers:
-        w.join()
+
+    # Use a pool of worker processes
+    with multiprocessing.Pool(
+            processes=5,
+            initializer=worker_configurer,
+            initargs=(queue,)
+    ) as pool:
+        pool.map(worker_task, range(5))
+
+    # Log messages from the main thread
+    logger = logging.getLogger("main")
+    for _ in range(10):
+        time.sleep(random())
+        level = choice(LEVELS)
+        message = f"Main thread message"
+        logger.log(level, message)
+
+    # Signal the listener to terminate
     queue.put_nowait(None)
     listener.join()
 

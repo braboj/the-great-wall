@@ -619,7 +619,7 @@ class WallManager(WallBuilderAbc):
             WallProfile: The wall profile with the specified ID.
         """
 
-        return next(
+        a = next(
 
             # Return the profile with the specified ID
             (
@@ -630,6 +630,8 @@ class WallManager(WallBuilderAbc):
             # Return None if the profile is not found
             None
         )
+
+        return a
 
     def get_section(self, section_id: int) -> Optional[WallSection]:
         """Get a section by its ID.
