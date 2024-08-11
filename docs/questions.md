@@ -1,8 +1,8 @@
-# Clarification Questions
+# Clarification List
 
-> This section is only for demonstrating the questions that arise during the
-> development. Typically, these questions are discussed with the client or the
-> team members in regular team meetings. 
+_This section is only for demonstrating the questions that arise during the
+development. Typically, these questions are discussed with the client or the
+team members in regular team meetings._ 
 
 1. The length of the wall is 300 miles, but it seems the length is not relevant
 to the problem.

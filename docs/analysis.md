@@ -1,5 +1,4 @@
-# Problem Analysis
-
+# Requirements Analysis
 
 ## 1. Scope
 
@@ -139,7 +138,7 @@ cost: “32,233,500”
 }
 ```
 
-### 4. Minimum Viable Product (MVP)
+## 4. Minimum Viable Product (MVP)
 
 The MVP should include the following features:
 

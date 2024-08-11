@@ -1,4 +1,4 @@
-# REST API Endpoints
+# REST API Reference
 
 ## Overview API Endpoints
 

@@ -1,6 +1,6 @@
-## The Great Wall
+# The Great Wall
 
-### Story
+## Story
 
 - "The White Walkers sleep beneath the ice for thousands of years. And when they
 wake up..."
@@ -13,7 +13,7 @@ defend the realm from the wildlings who live beyond. The Wall is reported to be 
 foot tall and is made of solid ice. The Sworn Brothers of the Night's Watch have
 arranged that each section has its own construction crew._
 
-### Description
+## Description
 
 Write a program that keeps track of material quantities and cost for the
 construction of the 30-foot wall.
@@ -37,24 +37,24 @@ amount of ice used during a particular day (given as a parameter) for
 a particular wall profile and second that gives the overview of how much 
 does the construction cost until the given day per profile and overall.
 
-### Input
+## Input
 
 The input is a config file containing the wall profiles with one line for each profile,
 containing numbers, separated by space.
 
-### Output
+## Output
 
 - **Daily API**: Print the amount of ice used on a given day for a profile.
 - **Overview API**: Shows the final cost of the wall. Or if given a parameter 
   shows the
 cost per wall profile.
 
-### Constraints
+## Constraints
 
 - The wall profile may contain up to 2000 sections
 - Starting height for each section is within range [0...30]
 
-### Multi-threaded Version
+## Multi-threaded Version
 
 Instead of automatically having a team for each section of the wall profile 
 take as an input also the number of available teams. Each team can work only 

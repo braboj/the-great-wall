@@ -1,4 +1,4 @@
-## . Backlog
+# Backlog
 
 - Connect the Django models to the builder logic and store the data in the database
 - Experiment with class-based views, redirecting, etc.

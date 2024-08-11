@@ -1,11 +1,4 @@
-# Overview
-
-The project is a REST API to simulate and track the construction of a fictional 
-defensive wall using `Django` and `multiprocessing`. This wall consists of
-multiple sections, and the system should accurately track the progress, 
-material usage, and costs associated with the construction.
-
-# Installation
+# Wall Project
 
 To get started, you need to install Docker. You can find the installation
 instructions [here](https://docs.docker.com/engine/install/). After that, you can run the following command to 
