@@ -6,61 +6,92 @@ skinparam {
     ArrowColor #000000
     BackgroundColor #ffffff
     BorderColor #b0b0b0
-    linetype polyline
-    linetype ortho
-    nodesep 50
+'    linetype polyline
+'    linetype ortho
+'    nodesep 150
 '    ranksep 100
 }
 
-interface WallBuilderAbc{
-    +is_ready()
-    +get_ice()
-    +get_cost()
-    +validate()
-    +configure()
-    +build()
+package "Builder" {
+
+    interface WallBuilderAbc{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+
+'    interface WallManagerAbc{
+'        +is_ready()
+'        +get_ice()
+'        +get_cost()
+'        +validate()
+'        +prepare()
+'        +build()
+'    }
+
+    class SectionBuilder{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+    class ProfileBuilder{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+    class WorklogBuilder{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+    class WallManager{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
 }
 
-class WallSection{
-    +is_ready()
-    +get_ice()
-    +get_cost()
-    +validate()
-    +configure()
-    +build()
+
+package Django  {
+    class SectionModel{
+    }
+
+    class ProfileModel{
+    }
+
+    class WorklogModel{
+    }
 }
 
-class WallProfile{
-    +is_ready()
-    +get_ice()
-    +get_cost()
-    +validate()
-    +configure()
-    +build()
-}
+'WallManagerAbc <|.. WallManager
+WallBuilderAbc <|.. ProfileBuilder
+WallBuilderAbc <|.. SectionBuilder
+WallBuilderAbc <|.. WorklogBuilder
 
-class WallBuilderSimulator{
-    +get_section
-    +is_ready()
-    +get_ice()
-    +get_cost()
-    +validate()
-    +configure()
-    +build()
-}
+SectionBuilder ..> SectionModel : uses
+ProfileBuilder ..> ProfileModel : uses
+WorklogBuilder ..> WorklogModel : uses
 
-
-class LogListener {
-    +configure()
-    +run()
-}
-
-WallBuilderAbc <|.. WallBuilderSimulator
-WallBuilderAbc <|.. WallProfile
-WallBuilderAbc <|.. WallSection
-
-WallBuilderSimulator "1" *-- "1" LogListener
-WallBuilderSimulator "1" *-- "1..*" WallProfile
-WallProfile "1" *-- "1..*" WallSection
+WallManager "1" *-right-> "*" WallBuilderAbc
 
 @enduml

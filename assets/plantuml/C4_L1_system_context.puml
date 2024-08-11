@@ -27,7 +27,7 @@ title System Context
 
 actor User as user
 
-rectangle WallTracker {
+rectangle DjangoProject {
 }
 
 rectangle Docker {
@@ -43,13 +43,13 @@ rectangle Linux {
 }
 
 user -- Docker : uses
-user -- WallTracker : uses
+user -- DjangoProject : uses
 
 Docker -- Linux : runs on
-Docker -- WallTracker : starts
+Docker -- DjangoProject : starts
 Docker -- DockerRegistry : uses
-WallTracker -- GitHub : stored in
-GitHub -- DockerRegistry : deploys on
+DjangoProject -- GitHub : stored in
+GitHub -- DockerRegistry : deployed on
 
 
 @enduml
