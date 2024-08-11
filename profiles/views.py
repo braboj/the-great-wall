@@ -7,7 +7,35 @@ from django.apps import apps
 
 @api_view(http_method_names=["GET"])
 def home(request):
-    return HttpResponse("Hello, world!")
+
+    html = """<html>
+    
+    <head>
+        <title>Profiles</title>
+    </head>
+    
+    <body>
+        <h1>Profiles</h1>
+        <p>Author: Branimir Georgiev</p>
+        
+        <p>
+            This is a simple API that allows you to manage profiles and
+            calculate costs for each profile.
+        </p>
+        
+        <p>Endpoints:</p>
+        
+        <ul>
+            <li>GET /profiles/overview/</li>
+            <li>GET /profiles/overview/{day_id}/</li>
+            <li>GET /profiles/{profile_id}/overview/{day_id}/</li>
+            <li>GET /profiles/{profile_id}/days/{day_id}/</li>
+            <li>GET /profiles/logs/</li>
+            <li>GET /profiles/config/</li>
+        </ul>
+    """
+
+    return HttpResponse(html)
 
 
 @api_view(http_method_names=["GET"])
@@ -30,7 +58,7 @@ def get_overall_overview(request):
 
     # Something went wrong
     except Exception as e:
-        return HttpResponse(status=404, content=str(e))
+        return HttpResponse(status=500, content=str(e))
 
     # Everything went well
     else:
@@ -60,7 +88,7 @@ def get_day_overview(request, day_id):
 
     # Something went wrong
     except Exception as e:
-        return HttpResponse(status=404, content=str(e))
+        return HttpResponse(status=500, content=str(e))
 
     # Everything went well
     else:
@@ -93,7 +121,7 @@ def get_profile_overview(request, profile_id, day_id):
 
     # Something went wrong
     except Exception as e:
-        return HttpResponse(status=404, content=str(e))
+        return HttpResponse(status=500, content=str(e))
 
     # Everything went well
     else:
@@ -126,7 +154,7 @@ def get_day_data(request, profile_id, day_id):
 
     # Something went wrong
     except Exception as e:
-        return HttpResponse(status=404, content=str(e))
+        return HttpResponse(status=500, content=str(e))
 
     # Everything went well
     else:
@@ -146,11 +174,18 @@ def get_logs(request):
     # Get the app
     app = apps.get_app_config("profiles")
 
-    # Get the logs from the manager
-    logs = app.manager.get_logs()
+    try:
+        # Get the logs from the manager
+        logs = app.manager.get_logs()
 
-    # Return the logs
-    return JsonResponse(logs)
+    # Something went wrong
+    except Exception as e:
+        return HttpResponse(status=500, content=str(e))
+
+    # Everything went well
+    else:
+        # Return the logs
+        return JsonResponse(logs)
 
 
 @api_view(http_method_names=["POST", "GET"])
@@ -182,7 +217,7 @@ def handle_config(request):
             app.config.set_params(request.data)
 
             # Get the new configuration data
-            data = app.config.get_params()
+            data = {"status": "success"}
 
         # Something went wrong
         except Exception as e:
