@@ -28,10 +28,11 @@ entity Team {
 }
 
 ' Define DailyLog entity
-entity DailyLog {
+entity WorkLog {
     +id: Integer
     --
     +section_id: Integer
+    +team_id: Integer
     +day: Integer
     +ice: Integer
     +cost: Integer
@@ -40,6 +41,9 @@ entity DailyLog {
 ' Define relationships
 WallProfile "1" -- "1..*" WallSection : contains
 WallSection "1" -- "1" Team : assigned to
-WallSection "1" -- "0..*" DailyLog : has
+WallSection "1..*" -- "1" WorkLog : logged in
+Team "1..*" -- "1" WorkLog : logged in
+
+
 
 @enduml
