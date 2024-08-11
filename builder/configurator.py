@@ -19,20 +19,36 @@ _SIMULATION_TIME_ = 0.01  # Simulated CPU work
 _MAX_SECTION_COUNT_ = 2000  # Maximum number of sections
 _MAX_WORKERS_ = 20  # Maximum number of workers
 _BUILD_RATE_ = 1  # Feet per day
+_PROFILES_ = [[21, 25, 28], [17], [17, 22, 17, 19, 17,]]
 
 
 class ConfiguratorAbc(ABC):
     """Abstract base class for configurators."""
 
     @abstractmethod
+    def get_params(self):
+        """Returns the configuration parameters."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_params(self, params):
+        """Sets the configuration parameters."""
+        raise NotImplementedError
+
+    @abstractmethod
     def from_ini(self, file_path, *args, **kwargs):
         """Creates a configuration object from an INI file."""
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def to_ini(self, file_path, *args, **kwargs):
         """Writes the configuration to an INI file."""
-        pass
+        raise NotImplementedError
+
+    @abstractmethod
+    def validate(self, *args, **kwargs):
+        """Validates the configuration data."""
+        raise NotImplementedError
 
 
 class WallConfigurator(object):
@@ -120,6 +136,8 @@ class WallConfigurator(object):
         }
 
     def set_params(self, params):
+
+        # Set the configuration parameters
         self.volume_ice_per_foot = params.get('volume_ice_per_foot', _VOLUME_ICE_PER_FOOT_)
         self.cost_per_volume = params.get('cost_per_volume', _COST_PER_VOLUME_)
         self.target_height = params.get('target_height', _TARGET_HEIGHT_)
@@ -127,7 +145,10 @@ class WallConfigurator(object):
         self.build_rate = params.get('build_rate', _BUILD_RATE_)
         self.num_teams = params.get('num_teams', _MAX_WORKERS_)
         self.cpu_worktime = params.get('cpu_worktime', _SIMULATION_TIME_)
-        self.profiles = params.get('profiles', [])
+        self.profiles = params.get('profiles', _PROFILES_)
+
+        # Validate the configuration
+        self.validate()
 
     @classmethod
     def from_ini(cls, file_path=DEFAULT_INI_FILE):
@@ -251,6 +272,66 @@ class WallConfigurator(object):
                 raise BuilderConfigError(
                     info=f"Error writing the profiles section: {e}"
                 )
+
+    def validate(self):
+
+        # Check the construction values
+        if self.volume_ice_per_foot <= 0:
+            raise BuilderConfigError(
+                info=f"Invalid volume_ice_per_foot: {self.volume_ice_per_foot}"
+            )
+
+        if self.cost_per_volume <= 0:
+            raise BuilderConfigError(
+                info=f"Invalid cost_per_volume: {self.cost_per_volume}"
+            )
+
+        if self.target_height <= 0:
+            raise BuilderConfigError(
+                info=f"Invalid target_height: {self.target_height}"
+            )
+
+        if self.max_section_count <= 0:
+            raise BuilderConfigError(
+                info=f"Invalid max_section_count: {self.max_section_count}"
+            )
+
+        # Check the task values
+        if self.num_teams <= 0:
+            raise BuilderConfigError(
+                info=f"Invalid num_teams: {self.num_teams}"
+            )
+
+        if self.cpu_worktime <= 0:
+            raise BuilderConfigError(
+                info=f"Invalid cpu_worktime: {self.cpu_worktime}"
+            )
+
+        # Check the profiles is a two-dimensional list
+        if not isinstance(self.profiles, list):
+            raise BuilderConfigError(
+                info=f"Invalid profiles: {self.profiles}"
+            )
+
+        # Check that all elements in the list are integers
+        for profile in self.profiles:
+            if not isinstance(profile, list):
+                raise BuilderConfigError(
+                    info=f"Invalid profile: {profile}"
+                )
+
+            for value in profile:
+                if not isinstance(value, int):
+                    raise BuilderConfigError(
+                        info=f"Invalid profile value: {value}"
+                    )
+
+        # Check the total number of elements in the profiles
+        total = sum([len(profile) for profile in self.profiles])
+        if total > self.max_section_count:
+            raise BuilderConfigError(
+                info=f"Total profiles size exceeds max_section_count: {total}"
+            )
 
 
 def main():
