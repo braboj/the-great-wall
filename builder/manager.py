@@ -115,26 +115,22 @@ class WallBuilderAbc(ABC):
     """Abstract base class for the wall builder."""
 
     @abstractmethod
-    def set_config(self, config):
-        """Sets an instance of the WallConfigurator class.
-
-        Args:
-            config (WallConfigurator): A configuration object.
-        """
+    def set_config(self, *args, **kwargs):
+        """Sets an instance of the WallConfigurator class."""
         raise NotImplementedError
 
     @abstractmethod
-    def is_ready(self):
+    def is_ready(self, *args, **kwargs):
         """Check if the wall is ready to be constructed."""
         raise NotImplementedError
 
     @abstractmethod
-    def get_ice(self):
+    def get_ice(self, *args, **kwargs):
         """Get the total ice consumed by the wall."""
         raise NotImplementedError
 
     @abstractmethod
-    def get_cost(self):
+    def get_cost(self, *args, **kwargs):
         """Get the total cost of the wall."""
         raise NotImplementedError
 
@@ -145,12 +141,12 @@ class WallBuilderAbc(ABC):
 
     @abstractmethod
     def build(self, *args, **kwargs):
-        """Build the wall."""
+        """Build something using the wall builder interface."""
         raise NotImplementedError
 
     @abstractmethod
     def validate(self):
-        """Validate the wall builder configuration."""
+        """Validate the attributes."""
         raise NotImplementedError
 
 
@@ -168,7 +164,7 @@ class WallSection(WallBuilderAbc):
     # All instances must share the same configuration
     config = WallConfigurator()
 
-    def __init__(self, section_id, profile_id=None, start_height=0):
+    def __init__(self, section_id=0, profile_id=None, start_height=0):
         """Initializes the wall section.
 
         Args:
@@ -215,6 +211,7 @@ class WallSection(WallBuilderAbc):
     @classmethod
     def set_config(cls, config):
         cls.config = config
+        return cls()
 
     def is_ready(self):
         """Returns True if the wall section is ready to be constructed."""
@@ -237,8 +234,10 @@ class WallSection(WallBuilderAbc):
         the attributes are not of the correct type or value.
 
         Raises:
-            TypeError   : If the data types of the attributes are incorrect.
-            ValueError  : If the values of the attributes are incorrect.
+            BuilderValidationError: If an attribute's type or value is invalid.
+
+        Returns:
+            WallSection: The validated wall section instance.
         """
 
         # ----------------------------------------------------------------------
@@ -355,7 +354,7 @@ class WallProfile(WallBuilderAbc):
     # All instances must share the same configuration
     config = WallConfigurator()
 
-    def __init__(self, profile_id, sections=None):
+    def __init__(self, profile_id=0, sections=None):
         """Initializes the wall profile.
 
         Args:
@@ -394,7 +393,16 @@ class WallProfile(WallBuilderAbc):
 
     @classmethod
     def set_config(cls, config):
+        """Sets an instance of the WallConfigurator class.
+
+        Args:
+            config (WallConfigurator): A configuration object.
+
+        Returns:
+            WallProfile: An instance of the WallProfile class.
+        """
         cls.config = config
+        return cls()
 
     def is_ready(self):
         """Returns True if the wall profile is ready to be constructed."""
@@ -421,6 +429,12 @@ class WallProfile(WallBuilderAbc):
         This method validates the configuration of the wall profile by checking
         the data types and values of the attributes. It raises exceptions if
         the attributes are not of the correct type or value.
+
+        Raises:
+            BuilderValidationError: If an attribute's type or value is invalid.
+
+        Returns:
+            WallProfile: The validated wall profile instance.
         """
 
         # ----------------------------------------------------------------------
@@ -458,6 +472,8 @@ class WallProfile(WallBuilderAbc):
             raise BuilderValidationError(
                 info='The sections count must be between 1 and 2000'
             )
+
+        return self
 
     @staticmethod
     def prepare(queue):
@@ -533,6 +549,7 @@ class WallManager(WallBuilderAbc):
         self.prepare(self.log_queue)
 
     def report(self, start_time, end_time):
+        """Log the results of the wall construction."""
         self.log.info('-' * 80)
         self.log.info(f'TOTAL ICE : {self.get_ice()}')
         self.log.info(f'TOTAL COST: {self.get_cost()}')
@@ -546,6 +563,9 @@ class WallManager(WallBuilderAbc):
         This method parses the configuration list to create wall sections. It
         creates a wall profile for each row in the configuration list and
         populates the sections with the start heights.
+
+        Returns:
+            WallManager: The updated wall manager instance
         """
 
         # Helper variable to track the section ID
@@ -575,15 +595,22 @@ class WallManager(WallBuilderAbc):
             self.profiles.append(profile)
             self.sections.extend(profile.sections)
 
+        return self
+
     def set_profile_list(self, profiles_list):
         """Set the profiles' list.
 
         Args:
             profiles_list (list): A list of profiles.
+
+        Returns:
+            WallManager: The updated wall manager instance.
         """
 
         # Set the profiles and sections
         self.config.profiles = profiles_list
+
+        return self
 
     def update_profiles(self):
         """Update the profiles after calculations.
@@ -591,6 +618,9 @@ class WallManager(WallBuilderAbc):
         This method is used to update the profiles after the calculations are
         complete. It filters the sections based on the profile ID and assigns
         the filtered sections to the profile.
+
+        Returns:
+            WallManager: An instance of the WallManager class.
         """
 
         for profile in self.profiles:
@@ -599,6 +629,8 @@ class WallManager(WallBuilderAbc):
                        self.sections)
             )
             profile.sections = profile_sections
+
+        return self
 
     def get_profile(self, profile_id):
         """Get a profile by its ID.
@@ -640,8 +672,33 @@ class WallManager(WallBuilderAbc):
 
     @classmethod
     def set_config(cls, config):
+        """Sets an instance of the WallConfigurator class.
+
+        Args:
+            config (WallConfigurator): A configuration object.
+
+        Returns:
+            WallManager: An instance of the WallManager class.
+        """
+
         cls.config = config
         return cls()
+
+    def get_logs(self):
+        """Get the log messages from a file."""
+
+        logs = []
+
+        with open(self.log_filepath, 'r') as file:
+            for line in file:
+                logs.append(line)
+
+        # Convert the logs to a dictionary
+        logs = {
+            'logs': logs
+        }
+
+        return logs
 
     def is_ready(self):
         """Check if all wall sections are ready."""
@@ -668,6 +725,12 @@ class WallManager(WallBuilderAbc):
         This method validates the configuration of the wall builder by checking
         the data types and values of the attributes. It raises exceptions if
         the attributes are not of the correct type or value.
+
+        Raises:
+            BuilderValidationError: If an attribute's type or value is invalid.
+
+        Returns:
+            WallManager: The validated wall manager instance.
         """
 
         profiles_list = self.config.profiles
@@ -691,6 +754,8 @@ class WallManager(WallBuilderAbc):
                     raise BuilderValidationError(
                         info=f'Element at index [{i}][{j}] is not an integer.'
                     )
+
+        return self
 
     @staticmethod
     def prepare(queue):
@@ -732,10 +797,8 @@ class WallManager(WallBuilderAbc):
     def build(self, days=1, num_teams=1):
         """Build the wall using a pool of workers.
 
-        This method builds the wall using a pool of workers. The workers are
-        mapped to the build method of the wall sections. The method logs the
-        progress of the construction and returns the updated wall builder
-        instance.
+        This method builds the wall using a pool of workers. Each worker is
+        mapped to build a wall section.
 
         Args:
             days (int)      : The number of days to build the wall.
@@ -810,9 +873,9 @@ def main():
     # ]
 
     config_list = [
-        [1, 1, 1],
-        [1],
-        [1, 1, 1, 1, 1, ]
+        [21, 25, 28],
+        [17],
+        [17, 22, 17, 19, 17, ]
     ]
 
     config = WallConfigurator(
