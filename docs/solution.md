@@ -280,8 +280,14 @@ _Time spent: 20 hours for implementation and testing_
 * [x] Add the required views and route them
 * [x] Connect the views and the wall builder logic
 * [x] Improve the builder manager
-* [ ] Allow configuration from the user
-* [ ] Test the views
+* [x] Allow configuration from the user
+* [x] Allow access to the log file
+* [x] Test the views
+
+> This is an implementation of the MVP (minimum viable product) for the REST 
+> API. The API will be used to interact with the wall builder manager.
+> At this stage, we will not use the Django models and a database.
+
 
 ### 6.2. Create a Django project
 
@@ -319,12 +325,13 @@ python manage.py startapp <replace_with_your_app_name>
 
 ### 6.5. Add a 'Hello, World!' view
 
-Create a view that returns a simple 'Hello, World!' message.
+Create a view that returns a simple 'Hello, World!' message in the profiles
+app.
 
 ```python
 from django.http import HttpResponse
 
-def hello_world():
+def home():
     return HttpResponse("Hello, World!")
 ```
 
@@ -391,7 +398,7 @@ cost: “32,233,500”
 ```
 
 Result:
-- [Rest_API_routing_test.mp4](..%2Fassets%2Fvideos%2FRest_API_routing_test.mp4)
+- [assets/videos/rest_api_routing_test.mp4](.../assets/videos/Rest_API_routing_test.mp4)
 
 
 ### 6.8. Improve the builder manager
@@ -401,15 +408,14 @@ builder manager based on some issues found during the previous steps.
 
 - [x] Update both sections and profiles after each calculation
 - [x] Add base exception class and extend the error hierarchy
-- [x] Add more unit tests to cover all relevant classes
 - [x] Extend the interface to new requirements during the development
-- [x] Resolve issue with the unit tests
-- [x] Document the code and update the diagrams
+- [x] Add more unit tests to cover all relevant classes
 
-> For unknown reasons, the unit tests are not working as expected. The tests are
-> passing, but after the tests something is not closed properly and the test 
-> runner hangs. Running the manager multiple times does not show any 
-> problems. The issue is not yet resolved.
+> The unit tests are not working as expected. The issue is related to the 
+> logging solution and more specifically when the main process logs to the 
+> logging queue. For now, the main process will not log to the queue to 
+> ensure successful unit tests. Further investigation is necessary to resolve 
+> the issue.
 
 ### 6.9. Allow configuration from the user
 
@@ -435,23 +441,156 @@ scenarios. The views will be tested with the Django test client.
  
 ## 7. Containerize the solution
 
-### 7.. References
+_Time spent: 2 hours for implementation and testing_
+
+### 7.1. Objectives
+
+* [x] Create a Dockerfile
+* [x] Build and run the Docker image
+* [x] Test the container
+
+> The solution will not be optimized for production. The goal is to create a
+> single container that can be used for testing and development purposes.
+
+### 7.2. Create a Dockerfile
+
+The Dockerfile will be used to build the Docker image. The Docker image will
+contain the Python environment and the Django project.
+
+```dockerfile
+# Python base image
+FROM python:3.12.5-alpine3.19
+
+# Define the working directory
+WORKDIR ./usr/src/wall_project
+
+# Copy the project files to the working directory
+COPY . .
+
+# Install the project dependencies
+RUN pip install -r requirements.txt
+
+# Expose the server port
+EXPOSE 8000
+
+# Run the Django development server
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+```
+
+### 7.3. Build and run the Docker image
+
+Build the Docker image using the Dockerfile.
+
+```text
+docker build -t wall_project:latest .
+```
+
+Run the Docker image using the following command.
+
+```text
+docker run -p 8000:8000 wall_project:latest
+```
+
+### 7.4. Test the container
+
+Test the container by navigating to http://localhost:8000 in your web browser.
+The Django development server should be running, and you should see the Django
+welcome page.
+
+Result:
+- [assets/videos/docker_rest_api_test.mp4](../assets/videos/docker_rest_api_test.mp4)
+
+### 7.5. References
+- https://github.com/docker/awesome-compose
 - https://github.com/cyantarek/django-microservices/blob/master/services/products/api/views.py
 - https://github.com/thejungwon/docker-webapp-django/tree/master
 - https://github.com/StephenGrider/microservices-casts
 
-## . Documentation
+## 8. Automate the documentation pages
 
-We will use MkDocs to build the documentation. The documentation will be
-deployed to GitHub Pages. The documentation will contain at least the following
-sections:
+### 8.1. Objectives
 
-1. Problem
-2. Solution
-3. Installation
-4. Rest API
-5. CONTRIBUTING.md
-6. README.md
+* [x] Create the documentation structure
+* [x] Use MkDocs to build the documentation
+* [x] Test locally the generated pages
+ 
+
+### 8.2. Create the documentation structure
+
+| File               | Description                         |
+|--------------------|-------------------------------------|
+| ./docs/index.md    | Project Overview                    |
+| ./docs/problem.md  | Problem Statement                   |
+| ./docs/solution.md | Solution Journal                    |
+| ./docs/rest_api.md | Rest API Reference                  |
+| ./CONTRIBUTING.md  | Contribution guidelines             |
+| ./README.md        | Installation and usage instructions |
+
+
+### 8.3. Use MkDocs to build the documentation
+
+MkDocs is a static site generator that's geared towards building project
+documentation. Documentation source files are written in Markdown, and
+MkDocs builds a static HTML site that can be easily hosted on GitHub Pages.
+
+```text
+pip install mkdocs
+```
+
+We will also need the section-index plugin to generate a table of contents for
+each page (see https://pypi.org/project/mkdocs-section-index/).
+
+```text
+pip install mkdocs-section-index
+```
+
+Create a new MkDocs project in the current directory. This will add a new
+`mkdocs.yml` configuration file and a new `docs/` directory if they do not
+already exist.
+
+```text
+mkdocs new .
+```
+
+As a next step populate the `docs/` directory with the documentation files.
+After this open the `mkdocs.yml` file and update the `nav` section with the
+new documentation files.
+
+```yaml
+site_name: "Wall Project Solution"
+
+theme:
+  name: "readthedocs"
+
+nav:
+    - Project:
+      - Home: index.md
+      - Problem Statement: problem.md
+      - Solution Journal : solution.md
+      - REST API Reference: rest_api.md
+
+plugins:
+- search
+- section-index
+```
+
+Now the project is ready to build the documentation. Run the following command
+to build the documentation.
+
+```text
+mkdocs build --site-dir build/pages
+```
+
+### 8.4. Test locally the generated pages
+
+Run the following command to serve the documentation locally.
+
+```text
+mkdocs serve
+```
+
+Result:
+- [assets/videos/mkdocs_test.mp4](../assets/videos/mkdocs_test.mp4)
 
 ## . Create the CI/CD pipeline
 
@@ -479,3 +618,5 @@ tracked using concrete issues in the commit messages.
 - Resolve issue with the unit tests, change the logging solution to pure 
   queue and then save the log in the main process or migrate to concurrent.futures
 - Convert WallConfigurator to a dataclass
+- Check how to change project and app names
+- Check complex multi-container solutions

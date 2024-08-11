@@ -1,4 +1,4 @@
-## The Wall
+## The Great Wall
 
 ### Story
 
@@ -6,11 +6,12 @@
 wake up..."
 - "And when they wake up... what?"
 - "I hope the Wall is high enough."
-The Wall is a colossal fortification which is being built to stretch for 100 leagues
+
+_The Wall is a colossal fortification which is being built to stretch for 100 leagues
 (300 miles) along the northern border of the Seven Kingdoms. Its purpose is to
 defend the realm from the wildlings who live beyond. The Wall is reported to be 30
 foot tall and is made of solid ice. The Sworn Brothers of the Night's Watch have
-arranged that each section has its own construction crew.
+arranged that each section has its own construction crew._
 
 ### Description
 
@@ -119,43 +120,3 @@ day: None;
 cost: “32,233,500”
 }
 ```
-
-The Wall is a colossal fortification intended to defend a realm from 
-external threats. It stretches for 300 miles along the northern border and 
-is built using solid ice. Each section of the Wall has a dedicated 
-construction crew tasked with increasing the section's height by 1 foot 
-each day until it reaches a total height of 30 feet.
-
-
-### Objectives
-
-The goal is to develop a REST API to simulate and track the construction of 
-a fictional defensive wall using the Django framework and Django Rest 
-Framework (DRF). This wall consists of multiple sections, and the system 
-should accurately track the progress, material usage, and costs associated 
-with the construction.
-
-### Construction Process
-
-- Each foot added to a section uses 195 cubic yards of ice.
-- Processing one cubic yard of ice costs 1900 Gold Dragon coins.
-- Construction crews work simultaneously on all sections that are below 30 
-  feet in height. Once a section reaches 30 feet, its crew is relieved.
-
-
-### Construction Mode
-
-The system should support two construction modes:
-
-1. **Single-threaded**: Only one construction crew works on the wall at a 
-   time. This mode is slower but consumes fewer resources.
-2. **Multi-threaded**: Multiple construction crews work on the wall 
-   simultaneously. This mode is faster but consumes more resources.
-
-### Questions
-
-- The length of the wall is 300 miles, but it seems the length is not relevant
-to the problem.
-- It is not clear how to allow the user to switch between the
-multithreaded and single-threaded construction mode. Shall it be done using
-the REST API?

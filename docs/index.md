@@ -32,7 +32,4 @@ example, use the following link to get the daily status of the wall:
 http://localhost:8000/profiles/1/days/1
 ```
 
-# Next Steps
- - Check the [Wall Project Pages](https://braboj.github.io/wall_project/).
- - To contribute, please visit [Contributing](CONTRIBUTING.md)
- - To leave feedback, please visit [Discussions](https://github.com/braboj/the-great-wall/discussions)
+Enjoy!

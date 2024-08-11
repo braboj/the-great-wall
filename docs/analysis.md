@@ -18,7 +18,14 @@ Framework (DRF). This wall consists of multiple sections, and the system
 should accurately track the progress, material usage, and costs associated 
 with the construction.
 
-The construction process is as follows:
+## 3. Features
+
+- REST API to track the construction of the wall
+- Multi-processing to simulate the construction of the wall
+- Logging to track the progress of the construction
+- Configurable wall profiles and work crews
+
+### Construction
 
 - Each foot added to a section uses 195 cubic yards of ice.
 - Processing one cubic yard of ice costs 1900 Gold Dragon coins.
@@ -26,13 +33,6 @@ The construction process is as follows:
   feet in height. Once a section reaches 30 feet, its crew is relieved.
 - After the crew is relieved, it can be reallocated to another section of 
   the wall (relocate mode)
-
-## 3. Features
-
-- REST API to track the construction of the wall
-- Multi-processing to simulate the construction of the wall
-- Logging to track the progress of the construction
-- Configurable wall profiles and work crews
 
 ## 4. Requirements
 
@@ -53,19 +53,18 @@ The requirements are divided into three categories based on RFC 2119:
 
 ### 4.2. Input
 
-- `MUST` - Provide a configuration file containing wall profiles. 
-- `MUST` - Configuration file contains one or lines for each wall profile
+- `MUST` - Provide a file containing wall profiles. 
+- `MUST` - The file contains one or lines for each wall profile
 - `MUST` - Each profile has one or more of sections with initial heights
 - `MUST` - Each section has an initial height between 0 and 30 feet.
 - `MUST` - Each section is separated by a space
 - `MUST` - The maximum allowed number of sections is 2000
 - `MAY` - The user MAY change the wall profiles using the REST API
 - `MAY` - The user MAY adjust the number of crews using the REST API
-- `MAY` - The configuration file contains sections
  
 ### 4.3. Output
 
-- `MUST` - Return JSON response for all endpoints, including errors
+- `MUST` - Return JSON response for all API endpoints
 - `MUST` - Provide an endpoint to get the daily status of the wall
 - `MUST` - Provide an endpoint to get the total cost of the wall
 - `MUST` - Provide an endpoint to get the cost of a specific profile
@@ -153,12 +152,7 @@ cost: “32,233,500”
 ### 7. Acceptance Criteria
 
 - As a user, I can follow the instructions to run the solution.
-- As a user, I can pull the container from Docker Hub or GitHub and run it 
-  locally.
-- As a user, I can access the documentation to understand how to use the 
-  API.
-- As a user, I can access the cost of a specific profile using the API.
-- As a user, I can access the daily status of the wall using the API.
-- As a user, I can access the total cost of the wall using the API.
-- As a user, I can access the log files using the API.
-- As a user, I can adjust the number of crews using the API.
+- As a user, I can pull the container from Docker Hub run it locally
+- As a user, I can access the REST API to track the construction of the wall
+- As a user, I can access the log files
+- As a user, I can adjust the number of crews
