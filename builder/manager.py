@@ -150,7 +150,7 @@ class WallBuilderAbc(ABC):
         raise NotImplementedError
 
 
-class WallSection(WallBuilderAbc):
+class SectionBuilder(WallBuilderAbc):
     """Represents a section of a wall.
 
     Attributes:
@@ -237,7 +237,7 @@ class WallSection(WallBuilderAbc):
             BuilderValidationError: If an attribute's type or value is invalid.
 
         Returns:
-            WallSection: The validated wall section instance.
+            SectionBuilder: The validated wall section instance.
         """
 
         # ----------------------------------------------------------------------
@@ -319,7 +319,7 @@ class WallSection(WallBuilderAbc):
         time taken for the building process using a sleep function.
 
         Returns:
-            WallSection: The updated wall section instance.
+            SectionBuilder: The updated wall section instance.
         """
 
         # Rename the worker process
@@ -349,7 +349,7 @@ class WallSection(WallBuilderAbc):
         return self
 
 
-class WallProfile(WallBuilderAbc):
+class ProfileBuilder(WallBuilderAbc):
     """Represents a profile of a wall.
 
     Attributes:
@@ -406,7 +406,7 @@ class WallProfile(WallBuilderAbc):
             config (WallConfigurator): A configuration object.
 
         Returns:
-            WallProfile: An instance of the WallProfile class.
+            ProfileBuilder: An instance of the WallProfile class.
         """
         cls.config = config
         return cls()
@@ -441,7 +441,7 @@ class WallProfile(WallBuilderAbc):
             BuilderValidationError: If an attribute's type or value is invalid.
 
         Returns:
-            WallProfile: The validated wall profile instance.
+            ProfileBuilder: The validated wall profile instance.
         """
 
         # ----------------------------------------------------------------------
@@ -469,7 +469,7 @@ class WallProfile(WallBuilderAbc):
             )
 
         # Check that all section elements are WallSection objects
-        if not all(isinstance(s, WallSection) for s in self.sections):
+        if not all(isinstance(s, SectionBuilder) for s in self.sections):
             raise BuilderValidationError(
                 info='All sections must be WallSection objects'
             )
@@ -514,7 +514,7 @@ class WallProfile(WallBuilderAbc):
         construction and returns the updated wall profile instance.
 
         Returns:
-            WallProfile: The updated wall profile instance.
+            ProfileBuilder: The updated wall profile instance.
         """
 
         # Build each section in the wall profile
@@ -533,7 +533,46 @@ class WallProfile(WallBuilderAbc):
         return self
 
 
-class WallManager(WallBuilderAbc):
+class WallManagerAbc(ABC):
+    """Abstract base class for the wall manager."""
+
+    @abstractmethod
+    def set_config(self, *args, **kwargs):
+        """Sets an instance of the WallConfigurator class."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def is_ready(self, *args, **kwargs):
+        """Check if the wall is ready to be constructed."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_ice(self, *args, **kwargs):
+        """Get the total ice consumed by the wall."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_cost(self, *args, **kwargs):
+        """Get the total cost of the wall."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def prepare(self, *args, **kwargs):
+        """Prepare the wall manager for construction."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def build(self, *args, **kwargs):
+        """Build something using the wall manager interface."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def validate(self):
+        """Validate the attributes."""
+        raise NotImplementedError
+
+
+class WallManager(WallManagerAbc):
     """Manages the construction of a wall.
 
     Attributes:
@@ -593,11 +632,11 @@ class WallManager(WallBuilderAbc):
         for row in self.config.profiles:
 
             profile_id = self.config.profiles.index(row)
-            profile = WallProfile(profile_id=profile_id)
+            profile = ProfileBuilder(profile_id=profile_id)
 
             # Extract the sections from the row
             for column in row:
-                section = WallSection(
+                section = SectionBuilder(
                     section_id=section_id,
                     profile_id=profile_id,
                     start_height=column
@@ -653,7 +692,7 @@ class WallManager(WallBuilderAbc):
             profile_id (int): The profile ID of the wall profile.
 
         Returns:
-            WallProfile: The wall profile with the specified ID.
+            ProfileBuilder: The wall profile with the specified ID.
         """
 
         try:
@@ -672,7 +711,7 @@ class WallManager(WallBuilderAbc):
             section_id (int): The section ID of the wall section.
 
         Returns:
-            WallSection: The wall section with the specified ID.
+            SectionBuilder: The wall section with the specified ID.
         """
 
         try:
@@ -837,7 +876,7 @@ class WallManager(WallBuilderAbc):
             # Create a pool of workers
             pool = Pool(
                 processes=num_teams,
-                initializer=WallSection.prepare,
+                initializer=SectionBuilder.prepare,
                 initargs=(self.log_queue,),
             )
 
@@ -853,7 +892,7 @@ class WallManager(WallBuilderAbc):
 
                 # Map a section from a profile to a worker
                 self.sections = pool.starmap(
-                    func=WallSection.build,
+                    func=SectionBuilder.build,
                     iterable=[(section, days) for section in self.sections]
                 )
 
