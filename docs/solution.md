@@ -501,10 +501,13 @@ Result:
 - [assets/videos/docker_rest_api_test.mp4](../assets/videos/docker_rest_api_test.mp4)
 
 ### 7.5. References
-- https://github.com/docker/awesome-compose
+- https://github.com/docker/awesome-compose/tree/master/django
 - https://github.com/cyantarek/django-microservices/blob/master/services/products/api/views.py
-- https://github.com/thejungwon/docker-webapp-django/tree/master
+- https://github.com/thejungwon/docker-webapp-django
 - https://github.com/StephenGrider/microservices-casts
+- https://github.com/dockersamples/link-shortener-django
+
+
 
 ## 8. Automate the documentation pages
 
@@ -592,31 +595,26 @@ mkdocs serve
 Result:
 - [assets/videos/mkdocs_test.mp4](../assets/videos/mkdocs_test.mp4)
 
-## . Create the CI/CD pipeline
+## 9. Create the CI/CD pipeline
 
 We will create a GitHub Actions workflow to run the tests on every push to the
 main branch. We will also create a GitHub Actions workflow to build and push the
 Docker image to Docker Hub on every release.
 
-What we want:
+## 9.1. Objectives
 
-1. Run the tests on every push to the main branch.
-2. Build and push the Docker image to Docker Hub on each push.
-3. Build the documentation and deploy it to GitHub Pages in every release.
+- [ ] Pipeline to build the documentation and deploy it to GitHub Pages
+- [ ] Pipeline to run the tests on every push to the main branch
+- [ ] Pipeline to build and push the Docker image to Docker Hub
+
+
+## . Review
+
+- [ ] Fix logical mistake with the worker reallocation (use days parameter)
+- [ ] Add the models to the solution
+- [ ] Check the diagrams
 
 ## . Release
 
 Till now, we were in the pre-development phase. After the tag, changes will be
 tracked using concrete issues in the commit messages.
-
-
-## . Backlog
-
-- Use django models and database for the calculations
-- Django REST framework to create the REST API
-- Class-based views
-- Resolve issue with the unit tests, change the logging solution to pure 
-  queue and then save the log in the main process or migrate to concurrent.futures
-- Convert WallConfigurator to a dataclass
-- Check how to change project and app names
-- Check complex multi-container solutions

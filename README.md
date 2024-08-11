@@ -23,13 +23,13 @@ docker run -p 8000:8000 braboj/wall_project:latest
 
 To access the project, open your browser and go to
 
-- [http://localhost:8000](http://localhost:8000). 
+- [http://localhost:8080](http://localhost:8080). 
 
 A simple page will be displayed with the endpoints available. As a quick 
 example, use the following link to get the daily status of the wall:
 
 ```text
-http://localhost:8000/profiles/1/days/1
+http://localhost:8080/profiles/1/days/1
 ```
 
 # Next Steps

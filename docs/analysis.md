@@ -1,31 +1,30 @@
 # Problem Analysis
 
 
-## 1. Background
-
-The Wall is a colossal fortification intended to defend a realm from 
-external threats. It stretches for 300 miles along the northern border and 
-is built using solid ice. Each section of the Wall has a dedicated 
-construction crew tasked with increasing the section's height by 1 foot 
-each day until it reaches a total height of 30 feet.
-
-
-## 2. Scope
+## 1. Scope
 
 The goal is to develop a REST API to simulate and track the construction of 
-a fictional defensive wall using the Django framework and Django Rest 
-Framework (DRF). This wall consists of multiple sections, and the system 
-should accurately track the progress, material usage, and costs associated 
-with the construction.
+a fictional defensive wall using the Django framework, Django Rest Framework 
+(DRF) and the multiprocessing library. This wall consists of multiple sections, 
+and the system should accurately track the progress, material usage, and costs 
+associated with the construction.
 
-## 3. Features
+## 2. Features
 
 - REST API to track the construction of the wall
-- Multi-processing to simulate the construction of the wall
+- Multiprocessing to simulate the construction of the wall
 - Logging to track the progress of the construction
 - Configurable wall profiles and work crews
 
-### Construction
+## 3. Requirements
+
+The requirements are divided into three categories based on RFC 2119:
+
+- `MUST`   - Task that is critical to the solution
+- `SHOULD` - Task that is important but not critical to the solution
+- `MAY`  - Task that is optional
+
+### 3.1. Construction Algorithm
 
 - Each foot added to a section uses 195 cubic yards of ice.
 - Processing one cubic yard of ice costs 1900 Gold Dragon coins.
@@ -34,16 +33,7 @@ with the construction.
 - After the crew is relieved, it can be reallocated to another section of 
   the wall (relocate mode)
 
-## 4. Requirements
-
-The requirements are divided into three categories based on RFC 2119:
-
-- `MUST`   - Task that is critical to the solution
-- `SHOULD` - Task that is important but not critical to the solution
-- `MAY`  - Task that is optional
-
-
-### 4.1. Technology Stack
+### 3.2. Technology Stack
 
 - `MUST` - Use **Django and Django Rest Framework**
 - `MUST` - Use **Docker** to containerize the solution
@@ -51,7 +41,7 @@ The requirements are divided into three categories based on RFC 2119:
 - `SHOULD` - Use Python 3.12+
 - `MAY` - Use SQLite as the database for persistence
 
-### 4.2. Input
+### 3.3. Input
 
 - `MUST` - Provide a file containing wall profiles. 
 - `MUST` - The file contains one or lines for each wall profile
@@ -62,7 +52,7 @@ The requirements are divided into three categories based on RFC 2119:
 - `MAY` - The user MAY change the wall profiles using the REST API
 - `MAY` - The user MAY adjust the number of crews using the REST API
  
-### 4.3. Output
+### 3.4. Output
 
 - `MUST` - Return JSON response for all API endpoints
 - `MUST` - Provide an endpoint to get the daily status of the wall
@@ -71,7 +61,7 @@ The requirements are divided into three categories based on RFC 2119:
 - `MUST` - Store a log file showing the work done by the teams
 - `MAY` - User may access the log files using the REST API
 
-### 6. Examples
+### 3.5. Examples
 
 #### Input
 
@@ -149,10 +139,16 @@ cost: “32,233,500”
 }
 ```
 
-### 7. Acceptance Criteria
+### 4. Minimum Viable Product (MVP)
 
-- As a user, I can follow the instructions to run the solution.
-- As a user, I can pull the container from Docker Hub run it locally
-- As a user, I can access the REST API to track the construction of the wall
-- As a user, I can access the log files
-- As a user, I can adjust the number of crews
+The MVP should include the following features:
+
+- Builder and configuration components
+- Models will be provided but not used (use only in-memory storage)
+- Routing and views for the API
+- Dockerfile to build the image
+- Unit tests for the API
+- Documentation for the solution
+
+Excluded are the following features:
+- Database persistence for the wall profiles
