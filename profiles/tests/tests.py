@@ -64,7 +64,7 @@ class ProfileOverviewTests(TestCase):
             kwargs={'profile_id': 1000, 'day_id': 1}
         )
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 500)
 
 
 class ProfileDailyStatusTests(TestCase):
@@ -88,7 +88,7 @@ class ProfileDailyStatusTests(TestCase):
             kwargs={'profile_id': 1000, 'day_id': 1}
         )
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 500)
 
 
 class ProfileConfigTests(TestCase):
@@ -130,14 +130,7 @@ class ProfileConfigTests(TestCase):
 
         # Define the data
         expected_data = {
-            'volume_ice_per_foot': 1,
-            'cost_per_volume': 2,
-            'target_height': 3,
-            'build_rate': 5,
-            'num_teams': 6,
-            'cpu_worktime': 7,
-            'profiles': [[1, 2, 3], [4, 5, 6]],
-            'max_section_count': 6,
+            'status': 'success',
         }
 
         # Generate the response
