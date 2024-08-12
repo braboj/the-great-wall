@@ -23,7 +23,7 @@ package "Builder" {
     }
 
     class WallManager{
-        +get_section
+        +get_section()
         +is_ready()
         +get_ice()
         +get_cost()
