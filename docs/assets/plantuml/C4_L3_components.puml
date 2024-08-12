@@ -1,0 +1,37 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+skinparam {
+    PackageStyle Frame
+    ArrowColor #000000
+    BackgroundColor #ffffff
+    BorderColor #b0b0b0
+    linetype polyline
+    linetype ortho
+    nodesep 10
+'    ranksep 100
+}
+
+package "Application" {
+
+    package "Wall Project" {
+        [settings]
+        [urls]
+    }
+
+    package "Profiles" {
+        [admin]
+        [apps]
+        [models]
+        [urls]
+        [views]
+    }
+
+    package "Builder" {
+        [configurator]
+        [errors]
+        [manager]
+    }
+}
+
+@enduml

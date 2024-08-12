@@ -1,0 +1,30 @@
+@startuml
+
+abstract class WallBuilderAbc
+abstract class WallManagerAbc
+
+
+class SectionBuilder {
+}
+
+class ProfileBuilder {
+}
+
+class WallManager {
+}
+
+class WallConfigurator
+
+WallBuilderAbc <|-- SectionBuilder
+WallBuilderAbc <|-- ProfileBuilder
+
+WallManagerAbc <|-- WallManager
+
+SectionBuilder ..> WallConfigurator : uses
+ProfileBuilder ..> WallConfigurator : uses
+WallManager ..> WallConfigurator : uses
+
+SectionBuilder  -up-  ProfileBuilder : contains
+ProfileBuilder  -left- WallManager : contains
+
+@enduml

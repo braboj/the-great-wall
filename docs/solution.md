@@ -10,8 +10,7 @@ _Time spent: 3 hours_
 * [x] Define the user stories
 * [x] Define the features
 
-See:
- - [analysis.md](analysis.md)
+See: [Problem Analysis](analysis.md)
 
 ### 1.2. References
 
@@ -151,6 +150,7 @@ if __name__ == "__main__":
 
 - https://pymotw.com/3/multiprocessing/index.html
 - https://docs.python.org/3/library/multiprocessing.html
+- https://superfastpython.com/multiprocessing-in-python/
 
 ## 4. Logging with Multiprocessing
 
@@ -163,23 +163,24 @@ _Time spent: 2 hours for reading, prototyping and implementation_
 
 ### 4.2. Challenges
 
-A challenge in the implementation is to log the progress of the construction
-crews in a file that is shared between the processes.
+_Although logging is thread-safe, and logging to a single file from 
+multiple threads in a single process is supported, logging to a single 
+file from multiple processes is not supported. There is no 
+standard way to serialize access to a single file across multiple 
+processes in Python._
 
-> https://docs.python.org/3/howto/logging-cookbook.html#logging-to-a-single-file-from-multiple-processes
->
-> Although logging is thread-safe, and logging to a single file from 
-> multiple threads in a single process is supported, logging to a single 
-> file from multiple processes is not supported. There is no 
-> standard way to serialize access to a single file across multiple 
-> processes in Python.
+See:
+
+- https://docs.python.org/3/howto/logging-cookbook.html#logging-to-a-single-file-from-multiple-processes
+
+
 
 ### 4.3. Solution
 
 One solution to this problem is to use a `Queue` to pass log messages from the
 worker processes to a single process that will write the log messages to a file.
 The queue will be handled by a separate process that will read log messages from
-the queue and write them to a file.
+the queue and write them to a log file.
 
 The `multi_process_logging.py` script contains the implementation of the 
 solution. The script uses a queue and a `QueueHandler` that will push the 
@@ -187,7 +188,7 @@ log messages to the queue. The `LogListener`process will get the log
 messages from the queue and write them to a file. The file name is fixed in 
 the script (pool_logging.log).
 
-Source: [/scripts/multi_process_logging.py](../scripts/multi_process_logging.py)
+Source: [/scripts/multi_process_logging.py](snippets/multi_process_logging.md)
 
 ### 4.4. References
 - https://stackoverflow.com/questions/13522177/python-multiprocessing-logging-why-multiprocessing-get-logger
@@ -224,7 +225,7 @@ is not affected by the number of workers.
 
 ### 5.3. Prototyping
 
-Sources: [/scripts/proof_of_concept.py](../scripts/proof_of_concept.py)
+Source: [/scripts/proof_of_concept.py](snippets/proof_of_concept.md)
 
 ## 6. Product Design
 
@@ -238,31 +239,28 @@ _Time spent: 4 hours for implementation_
 
 ### 6.2. Define Project Structure
 
-- **assets/** - Contains the images, videos, and other assets
-- **builder/** - Contains the main implementation of the solution
-  - **tests/** - Contains the tests for the implementation
-- **data/** - Contains the data files for the project
-  - **wall.ini** - Contains the configuration settings for the project
-  - **wall.log** - Contains the log messages for the project.
-- **docs/** - Contains the documentation for the project
-- **profiles/** - Django app to track the progress of the construction crews
-  - **migrations/** - Contains the migrations for the Django app
-  - **tests/** - Contains the tests for the Django app 
-- **scripts/** - Contains the scripts used to automate tasks, prototypes, etc
-- **wall-project/** - Contains the main settings for the project
+| Directory     | Description                                                  |
+|---------------|--------------------------------------------------------------|
+| builder/      | Contains the main implementation of the solution             |
+| data/         | Contains the configuration and log files                     |
+| docs/         | Contains the documentation for the project                   |
+| profiles/     | Django app to track the progress of the construction crews   |
+| scripts/      | Contains the scripts used to automate tasks, prototypes, etc |
+| wall-project/ | Contains the Django project settings                         |
+
 
 ### 6.3. Create Design Diagrams
 
 
 #### Proposal A: Modified Composite Pattern (chosen solution)
-![C4_L4_class_diagrams.png](../assets/images/C4_L4_composite.png)
+![C4_L4_class_diagrams.png](assets/images/C4_L4_composite.png)
 
 #### Proposal B: Builder Pattern (rejected)
-![C4_L4_class_diagrams.png](../assets/images/C4_L4_builder.png)
+![C4_L4_class_diagrams.png](assets/images/C4_L4_builder.png)
 
 #### Data Models
 
-![C4_L4_data_models.png](../assets/images/C4_L4_data_models.png)
+![C4_L4_data_models.png](assets/images/C4_L4_data_models.png)
 
 ### 6.4. Define CI/CD Pipeline
 
@@ -291,15 +289,19 @@ _Time spent: 20 hours for implementation and testing_
 * [x] Allow access to the log file
 * [x] Test the views
 
-This is an implementation of the MVP (minimum viable product) for the REST 
+
+NOTES:
+
+1. _This is an implementation of the MVP (minimum viable product) for the REST 
 API. The API will be used to interact with the wall builder manager.
-At this stage, we will not use the Django models and a database.
+At this stage, we will not use the Django models and a database._
 
 
 ### 7.2. Create a Django project
 
 A project is a collection of configurations and apps. One project can be 
-composed of multiple apps or a single app.
+composed of multiple apps or a single app. To create a new Django project, 
+run the following command:
 
 ```text
 django-admin startproject <replace_with_your_project_name>
@@ -308,12 +310,14 @@ django-admin startproject <replace_with_your_project_name>
 ### 7.3. Start the Django development server
 
 Test the project by running the development server. The development server is
-a lightweight web server included with Django. Access the server by
-navigating to http://127.0.0.1:8000 in your web browser.
+a lightweight web server included with Django. To start the development server, 
+run the following command:
 
 ```text
-python manage.py runserver
+python manage.py runserver 8080
 ```
+
+The development server will start on [http://localhost:8080](http://localhost:8080)
 
 ### 7.4. Create a new Django app
 
@@ -404,8 +408,9 @@ cost: “32,233,500”
 }
 ```
 
-Result:
-- [assets/videos/rest_api_routing_test.mp4](.../assets/videos/Rest_API_routing_test.mp4)
+Result: [assets/videos/rest_api_routing_test.mp4](assets/videos/rest_api_routing_test.mp4)
+
+![](assets/videos/rest_api_routing_test.gif)
 
 
 ### 7.8. Improve the builder manager
@@ -418,11 +423,14 @@ builder manager based on some issues found during the previous steps.
 - [x] Extend the interface to new requirements during the development
 - [x] Add more unit tests to cover all relevant classes
 
-> The unit tests are not working as expected. The issue is related to the 
-> logging solution and more specifically when the main process logs to the 
-> logging queue. For now, the main process will not log to the queue to 
-> ensure successful unit tests. Further investigation is necessary to resolve 
-> the issue.
+NOTES:
+
+1. _The unit tests are passing, but a process remains in the background after 
+the tests are completed.The issue is related to the logging solution and more 
+specifically when the main process logs to the logging queue._
+
+2. _For now, the main process will not log to the queue to ensure successful unit tests. 
+Further investigation is necessary to resolve the issue._
 
 ### 7.9. Allow configuration from the user
 
@@ -433,8 +441,14 @@ builder manager based on some issues found during the previous steps.
 - [x] Add a route to get the wall log using the REST API
 - [x] Provide unit tests for the views
 
-The test coverage of the views will cover only basic positive and negative
-scenarios. The views will be tested with the Django test client.
+NOTES:
+
+1. _Either use a dedicated script or tools from the command line to test the
+POST requests. A script `http_post.py` is provided in the `scripts` directory._
+2. _Alternatively use the `Invoke-WebRequest` or `curl` commands from the 
+command line._
+3. _The test coverage of the views will cover only basic positive and negative
+scenarios. The views will be tested with the Django test client._
 
 ### 7.10. References
 - https://simpleisbetterthancomplex.com/series/beginners-guide/1.11/
@@ -456,8 +470,10 @@ _Time spent: 2 hours for implementation and testing_
 * [x] Build and run the Docker image
 * [x] Test the container
 
-> The solution will not be optimized for production. The goal is to create a
-> single container that can be used for testing and development purposes.
+NOTES:
+
+1. _The solution will not be optimized for production. The goal is to create a 
+single container that can be used for testing and development purposes._
 
 ### 8.2. Create a Dockerfile
 
@@ -504,8 +520,9 @@ Test the container by navigating to http://localhost:8000 in your web browser.
 The Django development server should be running, and you should see the Django
 welcome page.
 
-Result:
-- [assets/videos/docker_rest_api_test.mp4](assets/videos/docker_rest_api_test.mp4)
+Result: [assets/videos/docker_rest_api_test.mp4](assets/videos/docker_rest_api_test.mp4)
+
+![](assets/videos/docker_rest_api_test.gif)
 
 ### 8.5. References
 - https://github.com/docker/awesome-compose/tree/master/django
@@ -513,7 +530,6 @@ Result:
 - https://github.com/thejungwon/docker-webapp-django
 - https://github.com/StephenGrider/microservices-casts
 - https://github.com/dockersamples/link-shortener-django
-
 
 
 ## 9. Build the documentation pages
@@ -601,8 +617,9 @@ Run the following command to serve the documentation locally.
 mkdocs serve
 ```
 
-Result:
-- [assets/videos/mkdocs_test.mp4](assets/videos/mkdocs_test.mp4)
+Result: [assets/videos/mkdocs_test.mp4](assets/videos/mkdocs_test.mp4)
+
+![](assets/videos/mkdocs_test.gif)
 
 ## 10. Create the CI/CD pipeline
 
@@ -618,27 +635,29 @@ Docker image to Docker Hub on every release.
 - [x] Pipeline to run the tests on every push to the main branch
 - [x] Pipeline to build and push the Docker image to Docker Hub
 
-### 10.2. Create a GitHub Action to publish the documentation
+### 10.2. GitHub Action to publish the documentation
 
 Create a new GitHub Actions workflow file in the `.github/workflows` directory.
-See the file [./.github/workflows/deploy_pages.yml](../.github/workflows/deploy_pages.yml).
+See the file [./.github/workflows/deploy_pages.yml](snippets/deploy_pages.md).
 
-### 10.3. Create a GitHub Action to run the tests on push
-
-Create a new GitHub Actions workflow file in the `.github/workflows` directory.
-See the file [./.github/workflows/run_tests.yml](../.github/workflows/run_tests.yml).
-
-### 10.4. Create a GitHub Action to build and push the Docker image
+### 10.3. GitHub Action to run the tests
 
 Create a new GitHub Actions workflow file in the `.github/workflows` directory.
-See the file [./.github/workflows/build_docker_image.yml](../.github/workflows/build_docker_image.yml).
+See the file [./.github/workflows/run_tests.yml](snippets/run_tests.md).
+
+### 10.4.GitHub Action to deploy the Docker image
+
+Create a new GitHub Actions workflow file in the `.github/workflows` directory.
+See the file [./.github/workflows/deploy_docker_image.yml](snippets/deploy_docker_image.md).
 
 Add secrets to the GitHub repository to store the Docker Hub username and password.
 
 ![github_docker_secrets.png](assets/images/github_docker_secrets.png)
 
 After the build the project is available on the Docker Hub. The link to the 
-Docker Hub repository is https://hub.docker.com/repository/docker/braboj/wall_project
+Docker Hub repository is: 
+
+- [Wall Project Docker Hub Repository](https://hub.docker.com/repository/docker/braboj/wall_project)
 
 ![dockerhub_wall_project.png](assets/images/dockerhub_wall_project.png)
 
@@ -648,16 +667,17 @@ _Time spent: 4 hours_
 
 ### 11.1. Objectives
 
-- [x] Fix logical mistake with the worker reallocation (use days parameter)
+- [x] Fix bug with worker reallocation
 - [x] Add the models to the solution
 - [x] Check the diagrams
 - [x] Check the acceptance criteria
 
 ### 11.2. Fix bug with the worker reallocation
 
-**Commit**
+**Commits**
 
-- https://github.com/braboj/the-great-wall/commit/f53ef3a
+- [5ac4a48](https:///github.com/braboj/the-great-wall/commit/5ac4a48)
+- [f53ef3a](https://github.com/braboj/the-great-wall/commit/f53ef3a)
 
 **Problem**
 
@@ -746,6 +766,7 @@ The MVP acceptance criteria are:
 - [x] Documentation
 
 If possible, include the following extended features:
+
 - [ ] Database persistence and models
 - [ ] Class-based views for the endpoints
 - [ ] Browsable API
@@ -761,13 +782,14 @@ Skills improved during the project:
 
 Challenges faced during the project:
 
-- Major release of another product, I could not work after-hours
-- Problems with the queue logging solution in the unit tests, spent 5-6 hours 
-to debug the issue. The workaround was to disable the main process logging
-to the queue.
+- Major release of another product, could not work after-hours
 - Lost 3 days of work due to illness (coronavirus), could not implement
 more features
+- Problems with the queue logging solution in the unit tests, spent 5-6 hours 
+to debug the issue. The workaround was to disable logging in the main process.
 
 What would I do differently next time:
 
+- Experiment and read more about multiprocessing + async programming
+- Videos and animated gifs could be done better
 - <...add feedbeck from the client or team memebers here...>

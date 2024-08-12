@@ -1,0 +1,55 @@
+@startuml
+/'
+Provide the overall system context that includes:
+
+- User roles
+- Our system, could be more than 1
+- Externals systems such as github, docker registry, cloud providers, etc.
+- Interactions between the systems
+
+Suitable diagrams:
+- https://plantuml.com/deployment-diagram
+
+'/
+
+skinparam {
+    PackageStyle Frame
+    ArrowColor #000000
+    BackgroundColor #ffffff
+    BorderColor #b0b0b0
+'    linetype polyline
+'    linetype ortho
+    nodesep 100
+    ranksep 10
+}
+
+title System Context
+
+actor User as user
+
+rectangle Application {
+}
+
+rectangle Docker {
+}
+
+rectangle DockerRegistry {
+}
+
+rectangle GitHub {
+}
+
+rectangle Linux {
+}
+
+user -- Docker : uses
+user -- Application : uses
+
+Docker -- Linux : runs on
+Docker -- Application : manages
+Docker -- DockerRegistry : push/pull
+Application -- GitHub : stored in
+GitHub -- DockerRegistry : deployed on
+
+
+@enduml

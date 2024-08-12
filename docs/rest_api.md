@@ -1,6 +1,6 @@
 # REST API Reference
 
-## Overview API Endpoints
+## A. Overview API Endpoints
 
 ### GET /profiles/overview
 
@@ -102,7 +102,7 @@ StatusDescription : OK
 Content           : {"day": 1, "cost": 1111500}
 ```
 
-## Daily Status API Endpoints
+## B. Daily Status API Endpoints
 
 ### GET /profiles/{profile_id}/days/{day_id}
 
@@ -136,7 +136,7 @@ StatusDescription : OK
 Content           : {"day": 1, "ice": 585}
 ```
 
-## Configuration API Endpoints
+## C. Configuration API Endpoints
 
 ### GET /profiles/config
 
@@ -214,7 +214,7 @@ Content           : {"status": "success"}
 ```
 
 
-## Logs API Endpoints
+## D. Logs API Endpoints
 
 ### GET /profiles/logs
 

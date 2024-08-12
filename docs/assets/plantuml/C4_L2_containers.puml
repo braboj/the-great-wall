@@ -1,0 +1,32 @@
+@startuml
+
+title Container Diagram
+
+skinparam {
+    PackageStyle Frame
+    ArrowColor #000000
+    BackgroundColor #ffffff
+    BorderColor #b0b0b0
+'    linetype polyline
+'    linetype ortho
+'    nodesep 150
+'    ranksep 100
+}
+
+actor User as user
+
+package Application {
+    [Profile App] as profiles
+    [Builder] as builder
+}
+
+package Database {
+    [SqlLite] as db
+}
+
+profiles --> builder : Uses
+user -right-> Application : Interacts with
+profiles -right-> db : Stores
+
+
+@enduml

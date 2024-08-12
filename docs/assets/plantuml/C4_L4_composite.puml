@@ -1,0 +1,68 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam {
+    PackageStyle Frame
+    ArrowColor #000000
+    BackgroundColor #ffffff
+    BorderColor #b0b0b0
+    linetype polyline
+    linetype ortho
+    nodesep 50
+    ranksep 100
+}
+
+package "Builder" {
+    abstract WallBuilderAbc{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +configure()
+        +build()
+    }
+
+    class WallManager{
+        +get_section()
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +configure()
+        +build()
+    }
+
+    class WallSection{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +configure()
+        +build()
+    }
+
+    class WallProfile{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +configure()
+        +build()
+    }
+
+    class Configurator{
+        +from_ini()
+        +to_ini()
+        +validate()
+    }
+}
+
+WallBuilderAbc <|.. WallSection
+WallBuilderAbc <|.. WallManager
+WallBuilderAbc <|.. WallProfile
+
+WallBuilderAbc *-right-> Configurator
+WallManager "1" *-left- "1..*" WallProfile
+WallProfile "1" *-left- "1..*" WallSection
+
+@enduml

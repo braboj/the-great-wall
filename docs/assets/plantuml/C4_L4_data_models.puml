@@ -1,0 +1,59 @@
+@startuml
+
+skinparam {
+    PackageStyle Frame
+    ArrowColor #000000
+    BackgroundColor #ffffff
+    BorderColor #b0b0b0
+    linetype polyline
+    linetype ortho
+'    nodesep 50
+'    ranksep 100
+}
+
+package Models {
+
+    ' Define WallProfile entity
+    entity WallProfile {
+        +id: Integer
+        --
+        +name: String
+    }
+
+    ' Define WallSection entity
+    entity WallSection {
+        +id: Integer
+        --
+        +profile_id: Integer
+        +name: String
+        +start_height: Integer
+    }
+
+    ' Define Team entity
+    entity Team {
+        +id: Integer
+        --
+        +name: String
+    }
+
+    ' Define DailyLog entity
+    entity WorkLog {
+        +id: Integer
+        --
+        +section_id: Integer
+        +team_id: Integer
+        +current_height: Integer
+        +day: Integer
+        +ice: Integer
+        +cost: Integer
+    }
+
+}
+' Define relationships
+WallProfile "1" -- "1..*" WallSection : contains
+WallSection "1..*" -- "1" WorkLog : part of
+Team "1..*" -- "1" WorkLog : part of
+
+
+
+@enduml

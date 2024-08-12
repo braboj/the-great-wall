@@ -10,7 +10,7 @@ nav:
       - Problem Analysis: analysis.md
       - Solution Journal : solution.md
       - Clarifications: clarifications.md
-      - Schedule: schedule.md
+      - Worklog: worklog.md
 
     - Development:
       - API Reference: rest_api.md

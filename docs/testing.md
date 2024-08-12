@@ -23,13 +23,14 @@ And then run the tests:
 python manage.py test
 ```
 
-### Unit Tests
+## Unit Tests
 
 Unit tests are used to test individual components of the system in isolation.
 These tests are written using the `unittest` module in Python and are located
 in the `tests` directory of each app or component.
 
 Some examples of unit tests in the project are:
+
 * [test_manager.py](../builder/tests/test_manager.py)
 * [test_configurator.py](../builder/tests/test_configurator.py)
 * [tests.py](../profiles/tests/tests.py)

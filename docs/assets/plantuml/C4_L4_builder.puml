@@ -1,0 +1,87 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+skinparam {
+    PackageStyle Frame
+    ArrowColor #000000
+    BackgroundColor #ffffff
+    BorderColor #b0b0b0
+'    linetype polyline
+'    linetype ortho
+'    nodesep 150
+'    ranksep 100
+}
+
+package "Builder" {
+
+    abstract WallBuilderAbc{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+'    interface WallManagerAbc{
+'        +is_ready()
+'        +get_ice()
+'        +get_cost()
+'        +validate()
+'        +prepare()
+'        +build()
+'    }
+
+    class SectionBuilder{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+    class ProfileBuilder{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+    class WorkLogBuilder{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+    class WallManager{
+        +is_ready()
+        +get_ice()
+        +get_cost()
+        +validate()
+        +prepare()
+        +build()
+    }
+
+    class Configurator{
+        +validate()
+        +from_ini()
+        +to_ini()
+    }
+
+}
+
+'WallManagerAbc <|.. WallManager
+WallBuilderAbc <|.. ProfileBuilder
+WallBuilderAbc <|.. SectionBuilder
+WallBuilderAbc <|.. WorkLogBuilder
+WallBuilderAbc *-right-> Configurator
+
+WallManager "1" *-right-> "*" WallBuilderAbc
+
+@enduml
