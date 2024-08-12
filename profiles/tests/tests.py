@@ -129,19 +129,24 @@ class ProfileConfigTests(TestCase):
         url = reverse('profiles:handle_config')
 
         # Define the data
-        expected_data = {
-            'status': 'success',
+        data = {
+            'num_teams': 20,
         }
 
         # Generate the response
         response = self.client.post(
             path=url,
-            data=json.dumps(expected_data),
+            data=json.dumps(data),
             content_type='application/json'
         )
 
+        expected_data = {
+            'status': 'success',
+        }
+
         # Check the response status code
         self.assertEqual(response.status_code, 200)
+        print(response)
 
         # Check the response data
         obtained_data = json.loads(response.content)

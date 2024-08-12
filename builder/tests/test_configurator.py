@@ -54,14 +54,14 @@ class TestConfigurator(TestCase):
 
         # Check the default values
         config = WallConfigurator()
-        self.assertEqual(config.volume_ice_per_foot, 195)
-        self.assertEqual(config.cost_per_volume, 1900)
-        self.assertEqual(config.target_height, 30)
-        self.assertEqual(config.max_section_count, 2000)
-        self.assertEqual(config.build_rate, 1)
-        self.assertEqual(config.num_teams, 20)
-        self.assertEqual(config.cpu_worktime, 0.01)
-        self.assertEqual(config.profiles, [])
+        self.assertEqual(config.volume_ice_per_foot, VOLUME_ICE_PER_FOOT)
+        self.assertEqual(config.cost_per_volume, COST_PER_VOLUME)
+        self.assertEqual(config.target_height, TARGET_HEIGHT)
+        self.assertEqual(config.max_section_count, MAX_SECTION_COUNT)
+        self.assertEqual(config.build_rate, BUILD_RATE)
+        self.assertEqual(config.num_teams, MAX_WORKERS)
+        self.assertEqual(config.cpu_worktime, WORK_DELAY)
+        self.assertEqual(config.profiles, PROFILES)
 
     def test_from_ini(self):
 

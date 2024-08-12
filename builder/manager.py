@@ -3,6 +3,7 @@ from multiprocessing import Process, Pool, Queue, current_process
 from abc import ABC, abstractmethod
 from builder.errors import *
 from builder.configurator import WallConfigurator
+from builder.validator import ConfigValidator
 
 import logging.handlers
 import logging
@@ -180,7 +181,12 @@ class WallSection(WallBuilderAbc):
     # All instances must share the same configuration
     config = WallConfigurator()
 
-    def __init__(self, section_id=0, profile_id=None, start_height=0):
+    def __init__(self,
+                 section_id=0,
+                 profile_id=None,
+                 start_height=0,
+                 validator=ConfigValidator()
+                 ):
         """Initializes the wall section.
 
         Args:
@@ -199,6 +205,9 @@ class WallSection(WallBuilderAbc):
         # Set the logger for the wall builder
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.addHandler(logging.NullHandler())
+
+        # Set the validator
+        self.validator = validator
 
     def __eq__(self, other):
         """Check if two wall sections are equal."""
@@ -238,63 +247,11 @@ class WallSection(WallBuilderAbc):
         return self.get_ice() * self.config.cost_per_volume
 
     def validate(self):
-        """Validates the wall section configuration.
+        """Validates the wall section instance."""
 
-        This method validates the configuration of the wall section by checking
-        the data types and values of the attributes. It raises exceptions if
-        the attributes are not of the correct type or value.
-
-        Raises:
-            BuilderValidationError: If an attribute's type or value is invalid.
-
-        Returns:
-            WallSection: The validated wall section instance.
-        """
-
-        # ----------------------------------------------------------------------
-        # Validate current_height
-
-        # Check the type of the start height
-        if not isinstance(self.start_height, int):
-            raise BuilderValidationError(
-                info='The start height must be an integer'
-            )
-
-        # Check that the start height is between 0 and the target height
-        if not 0 <= self.start_height <= self.config.target_height:
-            raise BuilderValidationError(
-                info='The start height must be between 0 and 30'
-            )
-
-        # ----------------------------------------------------------------------
-        # Validate section_id
-
-        # Check the type of section_id
-        if not isinstance(self.section_id, int):
-            raise BuilderValidationError(
-                info='The section_id must be an integer'
-            )
-
-        # Check that the section_id is positive
-        if self.section_id < 0:
-            raise BuilderValidationError(
-                info='The section_id must be a positive integer'
-            )
-
-        # ----------------------------------------------------------------------
-        # Validate profile_id
-
-        # Check the type of profile_id
-        if not isinstance(self.profile_id, (int, type(None))):
-            raise BuilderValidationError(
-                info='The profile_id must be an integer'
-            )
-
-        # Check that the profile_id is positive
-        if self.profile_id is not None and self.profile_id < 0:
-            raise BuilderValidationError(
-                info='The profile_id must be a positive integer'
-            )
+        self.validator.check_height(self.start_height)
+        self.validator.check_primary_key(self.section_id)
+        self.validator.check_foreign_key(self.profile_id)
 
     @staticmethod
     def prepare(queue):
@@ -372,7 +329,11 @@ class WallProfile(WallBuilderAbc):
     # All instances must share the same configuration
     config = WallConfigurator()
 
-    def __init__(self, profile_id=0, sections=None):
+    def __init__(self,
+                 profile_id=0,
+                 sections=None,
+                 validator=ConfigValidator()
+                 ):
         """Initializes the wall profile.
 
         Args:
@@ -387,6 +348,9 @@ class WallProfile(WallBuilderAbc):
         # Set the logger for the wall builder
         self.log = logging.getLogger(self.__class__.__name__)
         self.log.addHandler(logging.NullHandler())
+
+        # Set the validator
+        self.validator = validator
 
     def __eq__(self, other):
         """Check if two wall profiles are equal."""
@@ -442,41 +406,14 @@ class WallProfile(WallBuilderAbc):
             WallProfile: The validated wall profile instance.
         """
 
-        # ----------------------------------------------------------------------
-        # Validate profile_id
+        # Check the instance attributes
+        self.validator.check_primary_key(self.profile_id)
+        self.validator.check_iterable(self.sections)
+        self.validator.check_profiles(self.sections)
 
-        # Check the type of profile_id
-        if not isinstance(self.profile_id, int):
-            raise BuilderValidationError(
-                info='The profile_id must be an integer'
-            )
-
-        # Check that the profile_id is positive
-        if not self.profile_id >= 0:
-            raise BuilderValidationError(
-                info='The profile_id must be a positive integer'
-            )
-
-        # ----------------------------------------------------------------------
-        # Validate sections
-
-        # Check that sections is a list
-        if not isinstance(self.sections, list):
-            raise BuilderValidationError(
-                info='The sections must be a list'
-            )
-
-        # Check that all section elements are WallSection objects
-        if not all(isinstance(s, WallSection) for s in self.sections):
-            raise BuilderValidationError(
-                info='All sections must be WallSection objects'
-            )
-
-        # Check that the section size is between 1 and 2000
-        if not 1 <= len(self.sections) <= self.config.max_section_count:
-            raise BuilderValidationError(
-                info='The sections count must be between 1 and 2000'
-            )
+        # Check each section in the wall profile
+        for section in self.sections:
+            section.validate()
 
         return self
 
@@ -541,7 +478,10 @@ class WallManager(WallBuilderAbc):
         log_queue (Queue): A queue to receive log messages.
     """
 
-    def __init__(self, log_filepath='wall.log'):
+    def __init__(self,
+                 log_filepath='wall.log',
+                 validator=ConfigValidator()
+                 ):
         """Initializes the wall builder."""
 
         # Set the instance attributes
@@ -556,6 +496,9 @@ class WallManager(WallBuilderAbc):
         # Create the log queue to receive log messages
         self.log_queue = Queue()
         self.prepare(self.log_queue)
+
+        # Set the validator
+        self.validator = validator
 
     def report(self, start_time, end_time):
         """Log the results of the wall construction."""
@@ -606,7 +549,7 @@ class WallManager(WallBuilderAbc):
 
         return self
 
-    def set_profile_list(self, profiles_list):
+    def set_config_list(self, profiles_list):
         """Set the profiles' list.
 
         Args:
@@ -728,27 +671,18 @@ class WallManager(WallBuilderAbc):
             WallManager: The validated wall manager instance.
         """
 
-        profiles_list = self.config.profiles
+        # Check each profile in the wall manager
+        self.validator.check_iterable(self.profiles)
+        for profile in self.profiles:
+            profile.validate()
 
-        # Check that config_list is a list
-        if not isinstance(profiles_list, list):
-            raise BuilderValidationError(
-                info='The config_list must be a list'
-            )
+        # Check each section in the wall manager
+        self.validator.check_iterable(self.sections)
+        for section in self.sections:
+            section.validate()
 
-        # Check that all elements of config_list are lists
-        if not all(isinstance(element, list) for element in profiles_list):
-            raise BuilderValidationError(
-                info='All elements of config_list must be lists'
-            )
-
-        # Check that all elements of config_list are integers
-        for i, profiles in enumerate(profiles_list):
-            for j, section_height in enumerate(profiles):
-                if not isinstance(section_height, int):
-                    raise BuilderValidationError(
-                        info=f'Element at index [{i}][{j}] is not an integer.'
-                    )
+        # Check the profiles list
+        self.validator.check_config_list(self.config.profiles)
 
         return self
 

@@ -1,25 +1,14 @@
 # encoding: utf-8
-import json
 from abc import ABC, abstractmethod
 from builder.errors import BuilderConfigError
 from pathlib import Path
 import configparser
 
+from builder.defines import *
+from builder.validator import ConfigValidator, ConfigValidatorAbc
+
 DEFAULT_LOG_FILE = 'wall_progress.log'
 DEFAULT_INI_FILE = 'wall.ini'
-
-# These constants are meant to be private and should not be used directly
-# in the user's code. The WallConfigurator class provides a single point of
-# access to the configuration data.
-
-_VOLUME_ICE_PER_FOOT_ = 195  # Material consumption per foot
-_COST_PER_VOLUME_ = 1900  # Cost of material per volume
-_TARGET_HEIGHT_ = 30  # Fixed height of the wall
-_SIMULATION_TIME_ = 0.01  # Simulated CPU work
-_MAX_SECTION_COUNT_ = 2000  # Maximum number of sections
-_MAX_WORKERS_ = 20  # Maximum number of workers
-_BUILD_RATE_ = 1  # Feet per day
-_PROFILES_ = [[21, 25, 28], [17], [17, 22, 17, 19, 17,]]
 
 
 class ConfiguratorAbc(ABC):
@@ -61,37 +50,40 @@ class WallConfigurator(object):
     3. It protects the user's code from changes in the configuration data.
 
     Attributes:
-        volume_ice_per_foot : The cubic feet of ice per foot height
-        cost_per_volume     : The cost of ice per cubic foot
-        target_height       : The target height of the wall (in feet)
-        max_section_count   : The maximum number of sections
-        build_rate          : The rate of building the wall (in feet per hour)
-        num_teams         : The number of workers
-        cpu_worktime        : The CPU work time (in seconds)
-        profiles        : The list of profiles
+        volume_ice_per_foot (int)       : The cubic feet of ice per foot height
+        cost_per_volume (int)           : The cost of ice per cubic foot
+        target_height (int)             : The target height of the wall
+        max_section_count (int)         : The maximum number of sections
+        build_rate (int)                : The build rate of feet per day
+        num_teams (int)                 : The number of workers
+        cpu_worktime (float)            : The CPU work time (in seconds)
+        profiles  (list)                : The list of profiles
+        validator (ConfigValidatorAbc)  : The configuration validator
     """
 
     def __init__(self,
-                 volume_ice_per_foot=195,
-                 cost_per_volume=1900,
-                 target_height=30,
-                 max_section_count=2000,
-                 build_rate=1,
-                 num_teams=20,
-                 cpu_worktime=0.01,
-                 profiles=None,
+                 volume_ice_per_foot=VOLUME_ICE_PER_FOOT,
+                 cost_per_volume=COST_PER_VOLUME,
+                 target_height=TARGET_HEIGHT,
+                 max_section_count=MAX_SECTION_COUNT,
+                 build_rate=BUILD_RATE,
+                 num_teams=MAX_WORKERS,
+                 cpu_worktime=WORK_DELAY,
+                 profiles=PROFILES,
+                 validator=ConfigValidator()
                  ):
         """Initializes the configuration with default values.
 
         Args:
-            volume_ice_per_foot : The cubic feet of ice per foot height
-            cost_per_volume     : The cost of ice per cubic foot
-            target_height       : The target height of the wall (in feet)
-            max_section_count   : The maximum number of sections
-            build_rate          : The rate of building the wall (feet per day)
-            num_teams           : The number of workers
-            cpu_worktime        : The CPU work time (in seconds)
-            profiles            : The list of profiles
+            volume_ice_per_foot (int)       : The cubic feet of ice per foot height
+            cost_per_volume (int)           : The cost of ice per cubic foot
+            target_height (int)             : The target height of the wall
+            max_section_count (int)         : The maximum number of sections
+            build_rate (int)                : The build rate of feet per day
+            num_teams (int)                 : The number of workers
+            cpu_worktime (float)            : The CPU work time (in seconds)
+            profiles  (list)                : The list of profiles
+            validator (ConfigValidatorAbc)  : The configuration validator
         """
 
         # Construction
@@ -107,6 +99,9 @@ class WallConfigurator(object):
 
         # Profiles
         self.profiles = profiles or []
+
+        # Validator
+        self.validator = validator
 
     def __repr__(self):
         """Returns a string representation of the configuration."""
@@ -136,33 +131,38 @@ class WallConfigurator(object):
         }
 
     def set_params(self, params):
+        """Sets the configuration parameters.
 
-        # Set the configuration parameters
-        self.volume_ice_per_foot = params.get('volume_ice_per_foot', _VOLUME_ICE_PER_FOOT_)
-        self.cost_per_volume = params.get('cost_per_volume', _COST_PER_VOLUME_)
-        self.target_height = params.get('target_height', _TARGET_HEIGHT_)
-        self.max_section_count = params.get('max_section_count', _MAX_SECTION_COUNT_)
-        self.build_rate = params.get('build_rate', _BUILD_RATE_)
-        self.num_teams = params.get('num_teams', _MAX_WORKERS_)
-        self.cpu_worktime = params.get('cpu_worktime', _SIMULATION_TIME_)
-        self.profiles = params.get('profiles', _PROFILES_)
+        Args:
+            params (dict) : The configuration parameters
+        """
 
         # Validate the configuration
-        self.validate()
+        self.validate(params)
+
+        # Set the configuration parameters
+        self.volume_ice_per_foot = params.get('volume_ice_per_foot', VOLUME_ICE_PER_FOOT)
+        self.cost_per_volume = params.get('cost_per_volume', COST_PER_VOLUME)
+        self.target_height = params.get('target_height', TARGET_HEIGHT)
+        self.max_section_count = params.get('max_section_count', MAX_SECTION_COUNT)
+        self.build_rate = params.get('build_rate', BUILD_RATE)
+        self.num_teams = params.get('num_teams', MAX_WORKERS)
+        self.cpu_worktime = params.get('cpu_worktime', WORK_DELAY)
+        self.profiles = params.get('profiles', PROFILES)
 
     @classmethod
     def from_ini(cls, file_path=DEFAULT_INI_FILE):
         """Creates a configuration object from an INI file.
 
         Args:
-            file_path : The path to the INI file
+            file_path (str): The path to the INI file
 
         Returns:
             WallConfigurator : The configuration object
         """
 
         # Create the default configuration
-        config = cls()
+        config = cls(profiles=[])
 
         # Check if the file exists
         path = Path(file_path)
@@ -218,7 +218,7 @@ class WallConfigurator(object):
         """Writes the configuration to an INI file.
 
         Args:
-            file_path : The path to the INI file
+            file_path (str): The path to the INI file
 
         Returns:
             None
@@ -273,65 +273,44 @@ class WallConfigurator(object):
                     info=f"Error writing the profiles section: {e}"
                 )
 
-    def validate(self):
+    def validate(self, params):
+        """Validates the configuration data.
 
-        # Check the construction values
-        if self.volume_ice_per_foot <= 0:
-            raise BuilderConfigError(
-                info=f"Invalid volume_ice_per_foot: {self.volume_ice_per_foot}"
-            )
+        The method will raise an BuilderValidationError if the data is invalid.
 
-        if self.cost_per_volume <= 0:
-            raise BuilderConfigError(
-                info=f"Invalid cost_per_volume: {self.cost_per_volume}"
-            )
+        Args:
+            params (dict) : The configuration parameters
 
-        if self.target_height <= 0:
-            raise BuilderConfigError(
-                info=f"Invalid target_height: {self.target_height}"
-            )
+        Returns:
+            WallConfigurator : The validated configuration object
+        """
 
-        if self.max_section_count <= 0:
-            raise BuilderConfigError(
-                info=f"Invalid max_section_count: {self.max_section_count}"
-            )
+        if params.get('volume_ice_per_foot'):
+            self.validator.check_ice(params['volume_ice_per_foot'])
 
-        # Check the task values
-        if self.num_teams <= 0:
-            raise BuilderConfigError(
-                info=f"Invalid num_teams: {self.num_teams}"
-            )
+        if params.get('cost_per_volume'):
+            self.validator.check_ice(params['cost_per_volume'])
 
-        if self.cpu_worktime <= 0:
-            raise BuilderConfigError(
-                info=f"Invalid cpu_worktime: {self.cpu_worktime}"
-            )
+        if params.get('target_height'):
+            self.validator.check_cost(params['target_height'])
 
-        # Check the profiles is a two-dimensional list
-        if not isinstance(self.profiles, list):
-            raise BuilderConfigError(
-                info=f"Invalid profiles: {self.profiles}"
-            )
+        if params.get('max_section_count'):
+            self.validator.check_height(params['max_section_count'])
 
-        # Check that all elements in the list are integers
-        for profile in self.profiles:
-            if not isinstance(profile, list):
-                raise BuilderConfigError(
-                    info=f"Invalid profile: {profile}"
-                )
+        if params.get('build_rate'):
+            self.validator.check_section_count(params['build_rate'])
 
-            for value in profile:
-                if not isinstance(value, int):
-                    raise BuilderConfigError(
-                        info=f"Invalid profile value: {value}"
-                    )
+        if params.get('num_teams'):
+            self.validator.check_build_rate(params['num_teams'])
 
-        # Check the total number of elements in the profiles
-        total = sum([len(profile) for profile in self.profiles])
-        if total > self.max_section_count:
-            raise BuilderConfigError(
-                info=f"Total profiles size exceeds max_section_count: {total}"
-            )
+        if params.get('cpu_worktime'):
+            self.validator.check_num_teams(params['cpu_worktime'])
+
+        if params.get('profiles'):
+            self.validator.check_cpu_worktime(params['profiles'])
+
+        # Return the validated instance
+        return self
 
 
 def main():
