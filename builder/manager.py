@@ -9,9 +9,8 @@ import logging
 import time
 
 
-# TODO: WallBuilderAbc shall become a template class with set_config() and
-#  prepare() as template methods. The rest of the methods shall be abstract
-#  methods.
+# TODO: Move the prepare method to the WallBuilderAbc class after the problem
+#  with the logging is fixed.
 
 
 class LogListener(Process):
@@ -119,10 +118,22 @@ class LogListener(Process):
 class WallBuilderAbc(ABC):
     """Abstract base class for the wall builder."""
 
-    @abstractmethod
-    def set_config(self, *args, **kwargs):
-        """Sets an instance of the WallConfigurator class."""
-        raise NotImplementedError
+    # All instances of the base class must share the same configuration
+    config = WallConfigurator()
+
+    @classmethod
+    def set_config(cls, config):
+        """Sets an instance of the WallConfigurator class.
+
+        Args:
+            config (WallConfigurator): A configuration object.
+
+        Returns:
+            WallManager: An instance of the WallManager class.
+        """
+
+        cls.config = config
+        return cls()
 
     @abstractmethod
     def is_ready(self, *args, **kwargs):
@@ -212,11 +223,6 @@ class WallSection(WallBuilderAbc):
                 f'ready={self.is_ready()}'
                 f')'
                 )
-
-    @classmethod
-    def set_config(cls, config):
-        cls.config = config
-        return cls()
 
     def is_ready(self):
         """Returns True if the wall section is ready to be constructed."""
@@ -403,19 +409,6 @@ class WallProfile(WallBuilderAbc):
                 f")"
                 )
 
-    @classmethod
-    def set_config(cls, config):
-        """Sets an instance of the WallConfigurator class.
-
-        Args:
-            config (WallConfigurator): A configuration object.
-
-        Returns:
-            WallProfile: An instance of the WallProfile class.
-        """
-        cls.config = config
-        return cls()
-
     def is_ready(self):
         """Returns True if the wall profile is ready to be constructed."""
 
@@ -538,46 +531,7 @@ class WallProfile(WallBuilderAbc):
         return self
 
 
-class WallManagerAbc(ABC):
-    """Abstract base class for the wall manager."""
-
-    @abstractmethod
-    def set_config(self, *args, **kwargs):
-        """Sets an instance of the WallConfigurator class."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def is_ready(self, *args, **kwargs):
-        """Check if the wall is ready to be constructed."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_ice(self, *args, **kwargs):
-        """Get the total ice consumed by the wall."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_cost(self, *args, **kwargs):
-        """Get the total cost of the wall."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def prepare(self, *args, **kwargs):
-        """Prepare the wall manager for construction."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def build(self, *args, **kwargs):
-        """Build something using the wall manager interface."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def validate(self):
-        """Validate the attributes."""
-        raise NotImplementedError
-
-
-class WallManager(WallManagerAbc):
+class WallManager(WallBuilderAbc):
     """Manages the construction of a wall.
 
     Attributes:
@@ -586,9 +540,6 @@ class WallManager(WallManagerAbc):
         log (Logger): The logger for the wall builder.
         log_queue (Queue): A queue to receive log messages.
     """
-
-    # All instances must share the same configuration
-    config = WallConfigurator()
 
     def __init__(self, log_filepath='wall.log'):
         """Initializes the wall builder."""
@@ -727,20 +678,6 @@ class WallManager(WallManagerAbc):
 
         except StopIteration:
             raise BuilderError(f"Section with ID {section_id} not found.")
-
-    @classmethod
-    def set_config(cls, config):
-        """Sets an instance of the WallConfigurator class.
-
-        Args:
-            config (WallConfigurator): A configuration object.
-
-        Returns:
-            WallManager: An instance of the WallManager class.
-        """
-
-        cls.config = config
-        return cls()
 
     def get_logs(self):
         """Get the log messages from a file."""

@@ -14,6 +14,7 @@ skinparam {
 
 package "Builder" {
     abstract WallBuilderAbc{
+        +set_config()
         +is_ready()
         +get_ice()
         +get_cost()
@@ -61,7 +62,7 @@ WallBuilderAbc <|.. WallSection
 WallBuilderAbc <|.. WallManager
 WallBuilderAbc <|.. WallProfile
 
-WallBuilderAbc *-right-> Configurator
+WallBuilderAbc "1" o-right-> "1" Configurator
 WallManager "1" *-left- "1..*" WallProfile
 WallProfile "1" *-left- "1..*" WallSection
 
