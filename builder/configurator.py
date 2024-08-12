@@ -307,25 +307,25 @@ class WallConfigurator(object):
             self.validator.check_ice(params['volume_ice_per_foot'])
 
         if params.get('cost_per_volume'):
-            self.validator.check_ice(params['cost_per_volume'])
+            self.validator.check_cost(params['cost_per_volume'])
 
         if params.get('target_height'):
-            self.validator.check_cost(params['target_height'])
+            self.validator.check_height(params['target_height'])
 
         if params.get('max_section_count'):
-            self.validator.check_height(params['max_section_count'])
+            self.validator.check_section_count(params['max_section_count'])
 
         if params.get('build_rate'):
-            self.validator.check_section_count(params['build_rate'])
+            self.validator.check_build_rate(params['build_rate'])
 
         if params.get('num_teams'):
-            self.validator.check_build_rate(params['num_teams'])
+            self.validator.check_num_teams(params['num_teams'])
 
         if params.get('cpu_worktime'):
-            self.validator.check_num_teams(params['cpu_worktime'])
+            self.validator.check_cpu_worktime(params['cpu_worktime'])
 
         if params.get('profiles'):
-            self.validator.check_cpu_worktime(params['profiles'])
+            self.validator.check_config_list(params['profiles'])
 
         # Return the validated instance
         return self
