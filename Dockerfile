@@ -10,6 +10,10 @@ COPY . .
 # Install the project dependencies
 RUN pip install -r requirements.txt
 
+# Run the Django migrations
+RUN python3 manage.py makemigrations
+RUN python3 manage.py migrate
+
 # Expose the server port
 EXPOSE 8080
 
