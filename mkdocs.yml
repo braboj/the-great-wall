@@ -10,6 +10,7 @@ nav:
       - Problem Analysis: analysis.md
       - Solution Journal : solution.md
       - Clarifications: clarifications.md
+      - User Manual: manual.md
       - Worklog: worklog.md
 
     - Development:
