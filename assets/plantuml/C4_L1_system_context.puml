@@ -12,22 +12,22 @@ Suitable diagrams:
 
 '/
 
-'skinparam {
-'    PackageStyle Frame
-'    ArrowColor #000000
-'    BackgroundColor #ffffff
-'    BorderColor #b0b0b0
+skinparam {
+    PackageStyle Frame
+    ArrowColor #000000
+    BackgroundColor #ffffff
+    BorderColor #b0b0b0
 '    linetype polyline
 '    linetype ortho
-'    nodesep 50
-'    ranksep 100
-'}
+    nodesep 100
+    ranksep 10
+}
 
 title System Context
 
 actor User as user
 
-rectangle DjangoProject {
+rectangle Application {
 }
 
 rectangle Docker {
@@ -43,12 +43,12 @@ rectangle Linux {
 }
 
 user -- Docker : uses
-user -- DjangoProject : uses
+user -- Application : uses
 
 Docker -- Linux : runs on
-Docker -- DjangoProject : starts
-Docker -- DockerRegistry : uses
-DjangoProject -- GitHub : stored in
+Docker -- Application : manages
+Docker -- DockerRegistry : push/pull
+Application -- GitHub : stored in
 GitHub -- DockerRegistry : deployed on
 
 

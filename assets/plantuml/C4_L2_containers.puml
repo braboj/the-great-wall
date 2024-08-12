@@ -24,8 +24,9 @@ package Database {
     [SqlLite] as db
 }
 
+profiles --> builder : Uses
 user -right-> Application : Interacts with
-Application --> Database : Uses
+profiles -right-> db : Stores
 
 
 @enduml

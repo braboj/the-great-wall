@@ -14,7 +14,7 @@ skinparam {
 
 package "Builder" {
 
-    interface WallBuilderAbc{
+    abstract WallBuilderAbc{
         +is_ready()
         +get_ice()
         +get_cost()
@@ -22,7 +22,6 @@ package "Builder" {
         +prepare()
         +build()
     }
-
 
 '    interface WallManagerAbc{
 '        +is_ready()
@@ -51,7 +50,7 @@ package "Builder" {
         +build()
     }
 
-    class WorklogBuilder{
+    class WorkLogBuilder{
         +is_ready()
         +get_ice()
         +get_cost()
@@ -69,28 +68,19 @@ package "Builder" {
         +build()
     }
 
-}
-
-
-package Django  {
-    class SectionModel{
+    class Configurator{
+        +validate()
+        +from_ini()
+        +to_ini()
     }
 
-    class ProfileModel{
-    }
-
-    class WorklogModel{
-    }
 }
 
 'WallManagerAbc <|.. WallManager
 WallBuilderAbc <|.. ProfileBuilder
 WallBuilderAbc <|.. SectionBuilder
-WallBuilderAbc <|.. WorklogBuilder
-
-SectionBuilder ..> SectionModel : uses
-ProfileBuilder ..> ProfileModel : uses
-WorklogBuilder ..> WorklogModel : uses
+WallBuilderAbc <|.. WorkLogBuilder
+WallBuilderAbc *-right-> Configurator
 
 WallManager "1" *-right-> "*" WallBuilderAbc
 
