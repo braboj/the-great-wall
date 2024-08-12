@@ -32,6 +32,7 @@ def home(request):
             <li>GET /profiles/{profile_id}/days/{day_id}/</li>
             <li>GET /profiles/logs/</li>
             <li>GET /profiles/config/</li>
+            <li>POST /profiles/config/</li>
         </ul>
         
         <p>Examples:</p>
