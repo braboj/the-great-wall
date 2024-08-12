@@ -1,6 +1,6 @@
 # Backlog
 
-#### 1—High : Django models
+#### 1—Medium : Django models
 Connect the Django models to the builder logic and store the data in the database 
 
 #### 2—Low: Django views
