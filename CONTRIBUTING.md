@@ -49,7 +49,7 @@ pip install -r ./profiles/tests/requirements.txt
 And then run the tests:
 
 ```bash
-pyton manage.py test
+python manage.py test
 ```
 
 ## Linting

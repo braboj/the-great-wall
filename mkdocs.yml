@@ -9,8 +9,12 @@ nav:
       - Problem Statement: problem.md
       - Requirements: analysis.md
       - Solution Journal : solution.md
-      - REST API Reference: rest_api.md
-      - Clarification List: questions.md
+      - Clarifications: clarifications.md
+      - Schedule: schedule.md
+
+    - Development:
+      - API Reference: rest_api.md
+      - Testing: testing.md
       - Backlog: backlog.md
 
 

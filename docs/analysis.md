@@ -138,16 +138,21 @@ cost: “32,233,500”
 }
 ```
 
-## 4. Minimum Viable Product (MVP)
+## 4. Acceptance Criteria
 
-The MVP should include the following features:
+The MVP(Minimum Viable Product) should include the following features:
 
-- Builder and configuration components
+- Multiprocessing to simulate the construction of the wall
 - Models will be provided but not used (use only in-memory storage)
-- Routing and views for the API
+- Builder and configuration components
+- Required tracking API endpoints
+- Endpoints to configure the application
+- Endpoints to access the log file
 - Dockerfile to build the image
-- Unit tests for the API
-- Documentation for the solution
+- Unit tests for the solution
+- Documentation
 
-Excluded are the following features:
-- Database persistence for the wall profiles
+If possible, include the following extended features:
+- Database persistence and models
+- Class-based views for the API
+- Browsable API

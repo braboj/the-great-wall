@@ -21,12 +21,12 @@ See:
 
 _Time spent: 1 hour_
 
-### 1.1. Objectives
+### 2.1. Objectives
 * [x] Define the programming environment
 * [x] Define standards for further contributions
 * [x] Define the technology stack
 
-### 1.2. Selection
+### 2.2. Selection
 
 | Category             | Details                   |
 |----------------------|---------------------------|
@@ -42,17 +42,17 @@ _Time spent: 1 hour_
 | CI/CD                | GitHub Actions            |
 | Documentation        | GitHub Pages, MkDocs      |
 
-## 2. Multi-Processing in Python
+## 3. Multi-Processing in Python
 
 _Time spent: 7 hours for research, prototyping and implementation_
 
-### 2.1. Objectives
+### 3.1. Objectives
 
 * [x] Understand the key aspects of the `multiprocessing` module
 * [x] Implement a prototype using the `multiprocessing` module
 
 
-### 2.2. Prototyping
+### 3.2. Prototyping
 
 We will concentrate on the implementation of the solution based on the task 
 definition. We will use the `multiprocessing` module to simulate multiple 
@@ -147,21 +147,21 @@ if __name__ == "__main__":
     main()
 ```
 
-### 2.3. References
+### 3.3. References
 
 - https://pymotw.com/3/multiprocessing/index.html
 - https://docs.python.org/3/library/multiprocessing.html
 
-## 3. Logging with Multiprocessing
+## 4. Logging with Multiprocessing
 
 _Time spent: 2 hours for reading, prototyping and implementation_
 
-### 3.1. Objectives
+### 4.1. Objectives
 
 * [x] Understand the challenges of logging in a multiprocess environment
 * [x] Implement a prototype using the `multiprocessing` module
 
-### 3.2. Challenges
+### 4.2. Challenges
 
 A challenge in the implementation is to log the progress of the construction
 crews in a file that is shared between the processes.
@@ -174,7 +174,7 @@ crews in a file that is shared between the processes.
 > standard way to serialize access to a single file across multiple 
 > processes in Python.
 
-### 3.3. Solution
+### 4.3. Solution
 
 One solution to this problem is to use a `Queue` to pass log messages from the
 worker processes to a single process that will write the log messages to a file.
@@ -190,17 +190,17 @@ the script (pool_logging.log).
 Source:
 - [/scripts/multi_process_logging.py](../scripts/multi_process_logging.py)
 
-### 3.4. References
+### 4.4. References
 - https://stackoverflow.com/questions/13522177/python-multiprocessing-logging-why-multiprocessing-get-logger
 - https://pymotw.com/3/multiprocessing/basics.html#logging
 - https://docs.python.org/3/library/logging.handlers.html#queuehandler
 - https://github.com/getsentry/sentry-python
 
-## 4. Proof of Concept
+## 5. Proof of Concept
 
 _Time spent: 4 hours for implementation and testing_
 
-### 4.1. Objectives
+### 5.1. Objectives
 
 * [x] Define the proof of concept
 * [x] Create a working prototype of the solution with logging
@@ -208,7 +208,7 @@ _Time spent: 4 hours for implementation and testing_
 * [x] Simple positive tests to check the implementation
 
 
-### 4.2. Definition
+### 5.2. Definition
 
 In this step, we will create a simple proof of concept to check our 
 understanding of the problem. The prototype will be a simple Python 
@@ -226,53 +226,57 @@ is not affected by the number of workers.
 Sources:
 - [/scripts/proof_of_concept.py](../scripts/proof_of_concept.py)
 
-## 5. Product Design
+## 6. Product Design
 
 _Time spent: 4 hours for implementation_
 
-### 5.1. Objectives
+### 6.1. Objectives
 
 * [x] Define the project structure
 * [x] Define diagrams for the system (C4 model)
 * [x] Define the CI/CD pipeline
 
-### 5.2. Define Project Structure
+### 6.2. Define Project Structure
 
-- **assets/** - Contains the images, videos, and other assets used in the project.
-- **builder/** - Contains the main implementation of the solution.
-  - **tests/** - Contains the tests for the implementation.
-- **data/** - Contains the data files for the project.
-  - **wall.ini** - Contains the configuration settings for the project.
-  - **wall.log** - Contains the log messages for the project. 
-- **docs/** - Contains the documentation for the project.
+- **assets/** - Contains the images, videos, and other assets
+- **builder/** - Contains the main implementation of the solution
+  - **tests/** - Contains the tests for the implementation
+- **data/** - Contains the data files for the project
+  - **wall.ini** - Contains the configuration settings for the project
+  - **wall.log** - Contains the log messages for the project.
+- **docs/** - Contains the documentation for the project
 - **profiles/** - Django app to track the progress of the construction crews
-- **scripts/** - Contains the scripts used to automate tasks, prototypes, etc.
-- **wall-project/** - Contains the main settings for the project.
+  - **migrations/** - Contains the migrations for the Django app
+  - **tests/** - Contains the tests for the Django app 
+- **scripts/** - Contains the scripts used to automate tasks, prototypes, etc
+- **wall-project/** - Contains the main settings for the project
 
-### 5.3. Create Design Diagrams
+### 6.3. Create Design Diagrams
 
- - [ ] System Context
- - [ ] Containers
- - [ ] Components
- - [ ] Class Diagrams
- - [ ] Data Models
+#### Class Diagram
 
-### 5.4. Define CI/CD Pipeline
+![C4_L4_class_diagrams.png](../assets/images/C4_L4_composite.png)
+
+#### Data Models
+
+![C4_L4_data_models.png](../assets/images/C4_L4_data_models.png)
+
+### 6.4. Define CI/CD Pipeline
 
 - GitHub Actions to run the tests on every push to the main branch
 - GitHub Actions to build and push the Docker image to Docker Hub
 - GitHub Actions to build the documentation and deploy it to GitHub Pages
 
-### 5.5. References
+### 6.5. References
 - https://en.wikipedia.org/wiki/C4_model
 - https://c4model.com/img/c4-overview.png
 
 
-## 6. Django REST API
+## 7. Django REST API
 
 _Time spent: 20 hours for implementation and testing_
 
-### 6.1. Objectives
+### 7.1. Objectives
 
 * [x] Create a django project
 * [x] Create a django application
@@ -289,7 +293,7 @@ _Time spent: 20 hours for implementation and testing_
 > At this stage, we will not use the Django models and a database.
 
 
-### 6.2. Create a Django project
+### 7.2. Create a Django project
 
 A project is a collection of configurations and apps. One project can be 
 composed of multiple apps or a single app.
@@ -298,7 +302,7 @@ composed of multiple apps or a single app.
 django-admin startproject <replace_with_your_project_name>
 ```
 
-### 6.3. Start the Django development server
+### 7.3. Start the Django development server
 
 Test the project by running the development server. The development server is
 a lightweight web server included with Django. Access the server by
@@ -308,7 +312,7 @@ navigating to http://127.0.0.1:8000 in your web browser.
 python manage.py runserver
 ```
 
-### 6.4. Create a new Django app
+### 7.4. Create a new Django app
 
 An app usually is composed of a set of models (database tables), views, 
 templates, tests.
@@ -323,7 +327,7 @@ templates, tests.
 python manage.py startapp <replace_with_your_app_name>
 ```
 
-### 6.5. Add a 'Hello, World!' view
+### 7.5. Add a 'Hello, World!' view
 
 Create a view that returns a simple 'Hello, World!' message in the profiles
 app.
@@ -348,7 +352,7 @@ urlpatterns = [
 
 ![hello_world.png](../assets/images/django_route_hello_world.png)
 
-### 6.6. Add the required stub views and route them
+### 7.6. Add the required stub views and route them
 
 Add the required views that will just echo the input data. The views will 
 later connect to the wall builder manager.
@@ -358,7 +362,7 @@ later connect to the wall builder manager.
 ![django_route_profiles_1_overview_1.png](../assets/images/django_route_profiles_1_overview_1.png)
 ![/django_route_profiles_1_days_1.png](../assets/images/django_route_profiles_1_days_1)
 
-### 6.7. Connect the views to the wall builder logic
+### 7.7. Connect the views to the wall builder logic
 
 First, we will start to connect the views to the builder logic. As input, we
 will take the example in the documentation:
@@ -401,7 +405,7 @@ Result:
 - [assets/videos/rest_api_routing_test.mp4](.../assets/videos/Rest_API_routing_test.mp4)
 
 
-### 6.8. Improve the builder manager
+### 7.8. Improve the builder manager
 
 After the integration of the views with the builder logic, we will improve the
 builder manager based on some issues found during the previous steps.
@@ -417,7 +421,7 @@ builder manager based on some issues found during the previous steps.
 > ensure successful unit tests. Further investigation is necessary to resolve 
 > the issue.
 
-### 6.9. Allow configuration from the user
+### 7.9. Allow configuration from the user
 
 - [x] Handle exceptions in the views
 - [x] WallConfigurator class that will import or export the wall configuration
@@ -429,7 +433,7 @@ builder manager based on some issues found during the previous steps.
 The test coverage of the views will cover only basic positive and negative
 scenarios. The views will be tested with the Django test client.
 
-### 6.11. References
+### 7.10. References
 - https://simpleisbetterthancomplex.com/series/beginners-guide/1.11/
 - https://www.djangoproject.com/
 - https://www.django-rest-framework.org/
@@ -439,11 +443,11 @@ scenarios. The views will be tested with the Django test client.
 - https://django.cowhite.com/blog/working-with-url-get-post-parameters-in-django/
 
  
-## 7. Containerize the solution
+## 8. Containerize the solution
 
 _Time spent: 2 hours for implementation and testing_
 
-### 7.1. Objectives
+### 8.1. Objectives
 
 * [x] Create a Dockerfile
 * [x] Build and run the Docker image
@@ -452,7 +456,7 @@ _Time spent: 2 hours for implementation and testing_
 > The solution will not be optimized for production. The goal is to create a
 > single container that can be used for testing and development purposes.
 
-### 7.2. Create a Dockerfile
+### 8.2. Create a Dockerfile
 
 The Dockerfile will be used to build the Docker image. The Docker image will
 contain the Python environment and the Django project.
@@ -477,7 +481,7 @@ EXPOSE 8000
 CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
 ```
 
-### 7.3. Build and run the Docker image
+### 8.3. Build and run the Docker image
 
 Build the Docker image using the Dockerfile.
 
@@ -491,7 +495,7 @@ Run the Docker image using the following command.
 docker run -p 8000:8000 wall_project:latest
 ```
 
-### 7.4. Test the container
+### 8.4. Test the container
 
 Test the container by navigating to http://localhost:8000 in your web browser.
 The Django development server should be running, and you should see the Django
@@ -500,7 +504,7 @@ welcome page.
 Result:
 - [assets/videos/docker_rest_api_test.mp4](../assets/videos/docker_rest_api_test.mp4)
 
-### 7.5. References
+### 8.5. References
 - https://github.com/docker/awesome-compose/tree/master/django
 - https://github.com/cyantarek/django-microservices/blob/master/services/products/api/views.py
 - https://github.com/thejungwon/docker-webapp-django
@@ -509,16 +513,18 @@ Result:
 
 
 
-## 8. Automate the documentation pages
+## 9. Build the documentation pages
 
-### 8.1. Objectives
+_Time spent: 1 hour_
+
+### 9.1. Objectives
 
 * [x] Create the documentation structure
 * [x] Use MkDocs to build the documentation
 * [x] Test locally the generated pages
  
 
-### 8.2. Create the documentation structure
+### 9.2. Create the documentation structure
 
 | File               | Description                         |
 |--------------------|-------------------------------------|
@@ -530,7 +536,7 @@ Result:
 | ./README.md        | Installation and usage instructions |
 
 
-### 8.3. Use MkDocs to build the documentation
+### 9.3. Use MkDocs to build the documentation
 
 MkDocs is a static site generator that's geared towards building project
 documentation. Documentation source files are written in Markdown, and
@@ -584,7 +590,7 @@ to build the documentation.
 mkdocs build --site-dir build/pages
 ```
 
-### 8.4. Test locally the generated pages
+### 9.4. Test locally the generated pages
 
 Run the following command to serve the documentation locally.
 
@@ -595,36 +601,170 @@ mkdocs serve
 Result:
 - [assets/videos/mkdocs_test.mp4](../assets/videos/mkdocs_test.mp4)
 
-## 9. Create the CI/CD pipeline
+## 10. Create the CI/CD pipeline
+
+_Time spent: 2 hours_
 
 We will create a GitHub Actions workflow to run the tests on every push to the
 main branch. We will also create a GitHub Actions workflow to build and push the
 Docker image to Docker Hub on every release.
 
-## 9.1. Objectives
+### 10.1. Objectives
 
 - [x] Pipeline to build the documentation and deploy it to GitHub Pages
-- [ ] Pipeline to run the tests on every push to the main branch
-- [ ] Pipeline to build and push the Docker image to Docker Hub
+- [x] Pipeline to run the tests on every push to the main branch
+- [x] Pipeline to build and push the Docker image to Docker Hub
 
-## 9.2. Create the GitHub Actions to publish the documentation
+### 10.2. Create a GitHub Action to publish the documentation
 
 Create a new GitHub Actions workflow file in the `.github/workflows` directory.
 See the file [./.github/workflows/deploy_pages.yml](../.github/workflows/deploy_pages.yml).
 
-## 9.3. Create the GitHub Actions to run the tests
+### 10.3. Create a GitHub Action to run the tests on push
 
 Create a new GitHub Actions workflow file in the `.github/workflows` directory.
 See the file [./.github/workflows/run_tests.yml](../.github/workflows/run_tests.yml).
 
+### 10.4. Create a GitHub Action to build and push the Docker image
 
-## . Review
+Create a new GitHub Actions workflow file in the `.github/workflows` directory.
+See the file [./.github/workflows/build_docker_image.yml](../.github/workflows/build_docker_image.yml).
 
-- [ ] Fix logical mistake with the worker reallocation (use days parameter)
-- [ ] Add the models to the solution
-- [ ] Check the diagrams
+Add secrets to the GitHub repository to store the Docker Hub username and password.
 
-## . Release
+![github_docker_secrets.png](../assets/images/github_docker_secrets.png)
 
-Till now, we were in the pre-development phase. After the tag, changes will be
-tracked using concrete issues in the commit messages.
+After the build the project is available on the Docker Hub. The link to the 
+Docker Hub repository is https://hub.docker.com/repository/docker/braboj/wall_project
+
+![dockerhub_wall_project.png](../assets/images/dockerhub_wall_project.png)
+
+## 11. Review
+
+_Time spent: 4 hours_
+
+### 11.1. Objectives
+
+- [x] Fix logical mistake with the worker reallocation (use days parameter)
+- [x] Add the models to the solution
+- [x] Check the diagrams
+- [x] Check the acceptance criteria
+
+### 11.2. Fix bug with the worker reallocation
+
+**Commit**
+
+- https://github.com/braboj/the-great-wall/commit/f53ef3a
+
+**Problem**
+
+The worker reallocation is not working as expected. The workers are not
+reallocated to the next section after the current section is completed.
+
+**Before fix**
+
+```text
+    Worker-2        - Added 1 foot to section 0 to reach 22 feet on day 1\n",
+    Worker-2        - Added 1 foot to section 4 to reach 26 feet on day 9\n",
+    Worker-2        - Added 1 foot to section 7 to reach 30 feet on day 11\n",
+```
+
+**After fix**
+
+```text
+2024-08-11 19:25:43,325 INFO     Worker-4        - Added 1 foot to section 3 to reach 18 feet on day 1
+2024-08-11 19:25:43,436 INFO     Worker-4        - Added 1 foot to section 3 to reach 19 feet on day 2
+2024-08-11 19:25:43,447 INFO     Worker-4        - Added 1 foot to section 3 to reach 20 feet on day 3
+2024-08-11 19:25:43,458 INFO     Worker-4        - Added 1 foot to section 3 to reach 21 feet on day 4
+2024-08-11 19:25:43,473 INFO     Worker-4        - Added 1 foot to section 3 to reach 22 feet on day 5
+2024-08-11 19:25:43,484 INFO     Worker-4        - Added 1 foot to section 3 to reach 23 feet on day 6
+2024-08-11 19:25:43,495 INFO     Worker-4        - Added 1 foot to section 3 to reach 24 feet on day 7
+2024-08-11 19:25:43,539 INFO     Worker-4        - Added 1 foot to section 3 to reach 25 feet on day 8
+2024-08-11 19:25:43,549 INFO     Worker-4        - Added 1 foot to section 3 to reach 26 feet on day 9
+2024-08-11 19:25:43,559 INFO     Worker-4        - Added 1 foot to section 3 to reach 27 feet on day 10
+2024-08-11 19:25:43,571 INFO     Worker-4        - Added 1 foot to section 3 to reach 28 feet on day 11
+2024-08-11 19:25:43,581 INFO     Worker-4        - Added 1 foot to section 3 to reach 29 feet on day 12
+2024-08-11 19:25:43,592 INFO     Worker-4        - Added 1 foot to section 3 to reach 30 feet on day 13
+2024-08-11 19:25:43,603 INFO     Worker-4        - Added 1 foot to section 0 to reach 22 feet on day 1
+2024-08-11 19:25:43,614 INFO     Worker-4        - Added 1 foot to section 0 to reach 23 feet on day 2
+2024-08-11 19:25:43,625 INFO     Worker-4        - Added 1 foot to section 0 to reach 24 feet on day 3
+2024-08-11 19:25:43,636 INFO     Worker-4        - Added 1 foot to section 0 to reach 25 feet on day 4
+```
+
+### 11.3. Add the models to the solution
+
+First create a superuser to access the Django admin interface:
+
+```text
+python manage.py createsuperuser
+```
+
+The commands to interact with the Django models are:
+
+```text
+# Create the models
+python manage.py makemigrations
+
+# Apply the migrations
+python manage.py migrate
+```
+
+The views can be registered in the `admin.py` file:
+
+```python
+from django.contrib import admin
+
+# Register your models here.
+from profiles.models import WallProfile, WallSection, Team, WorkLog
+
+admin.site.register(WallProfile)
+admin.site.register(WallSection)
+admin.site.register(Team)
+admin.site.register(WorkLog)
+```
+
+### 11.4. Check the acceptance criteria
+
+The acceptance criteria are met. The solution is able to simulate the
+construction of the wall using multiple construction crews. The solution
+provides the required API endpoints to configure the wall and access the log
+file.
+
+The MVP acceptance criteria are:
+
+- [x] Multiprocessing to simulate the construction of the wall
+- [x] Models will be provided but not used (use only in-memory storage)
+- [x] Builder and configuration components
+- [x] Required tracking API endpoints
+- [x] Endpoints to configure the application
+- [x] Endpoints to access the log file
+- [x] Dockerfile to build the image
+- [x] Unit tests for the solution
+- [x] Documentation
+
+If possible, include the following extended features:
+- [ ] Database persistence and models
+- [ ] Class-based views for the endpoints
+- [ ] Browsable API
+
+## 12. Retrospective
+
+Skills improved during the project:
+
+- Multiprocessing in Python
+- Logging in a multiprocess environment
+- Django and Django REST framework
+- PlantUML for diagrams
+
+Challenges faced during the project:
+
+- Major release of another product, I could not work after-hours
+- Problems with the queue logging solution in the unit tests, spent 5-6 hours 
+to debug the issue. The workaround was to disable the main process logging
+to the queue.
+- Lost 3 days of work due to illness (coronavirus), could not implement
+more features
+
+What would I do differently next time:
+
+- <...add feedbeck from the client or team memebers here...>
