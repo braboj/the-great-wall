@@ -85,9 +85,9 @@ class ConfigValidator(object):
         True
         >>> validator.check_cpu_worktime(0.01)
         True
-        >>> validator.check_sections([1, 2, 3])
+        >>> validator.check_wall_sections([1, 2, 3])
         True
-        >>> validator.check_profiles([1, 2, 3])
+        >>> validator.check_wall_profiles([1, 2, 3])
         True
         >>> validator.check_config_list([[1, 2, 3], [4, 5, 6]])
         True
@@ -203,13 +203,13 @@ class ConfigValidator(object):
         # Check the type of the value
         if not isinstance(value, int):
             raise BuilderValidationError(
-                info='The start height must be an integer'
+                info='The section count must be an integer'
             )
 
         # Check that the value is within the allowed range
         if not 0 < value < MAX_SECTION_COUNT:
             raise BuilderValidationError(
-                info=f"Invalid value for max_section_count: {value}"
+                info=f"The section count is not within the allowed range: {value}"
             )
 
         return True
@@ -221,13 +221,13 @@ class ConfigValidator(object):
         # Check the type of the value
         if not isinstance(value, int):
             raise BuilderValidationError(
-                info='The start height must be an integer'
+                info='The build rate must be an integer'
             )
 
         # Check that the value is positive
         if value <= 0:
             raise BuilderValidationError(
-                info=f"Invalid value for build_rate: {value}"
+                info=f"The build rate must be a positive integer: {value}"
             )
 
         return True
@@ -257,19 +257,19 @@ class ConfigValidator(object):
         # Check the type of the value
         if not isinstance(value, float):
             raise BuilderValidationError(
-                info='The start height must be a float'
+                info='The cpu worktime must be a float'
             )
 
         # Check that the value is positive
         if value <= 0:
             raise BuilderValidationError(
-                info=f"Invalid value for cpu_worktime: {value}"
+                info=f"The cpu worktime must be a positive float: {value}"
             )
 
         return True
 
     @staticmethod
-    def check_sections(value):
+    def check_wall_sections(value):
         """Checks a section parameter."""
 
         # Check the sections is iterable
@@ -288,7 +288,7 @@ class ConfigValidator(object):
         return True
 
     @staticmethod
-    def check_profiles(value):
+    def check_wall_profiles(value):
         """Checks a profile parameter."""
 
         # Check the profiles is iterable

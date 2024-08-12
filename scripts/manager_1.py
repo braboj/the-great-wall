@@ -325,7 +325,7 @@ class WallProfile(WallBuilderAbc):
         # Check the instance attributes
         self.validator.check_primary_key(self.profile_id)
         self.validator.check_iterable(self.sections)
-        self.validator.check_profiles(self.sections)
+        self.validator.check_wall_profiles(self.sections)
 
         # Check each section in the wall profile
         for section in self.sections:

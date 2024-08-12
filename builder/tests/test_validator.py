@@ -170,34 +170,34 @@ class TestConfigValidator(TestCase):
 
     def test_check_sections(self):
 
-        self.assertTrue(self.validator.check_sections([1, 2, 3]))
-        self.assertTrue(self.validator.check_sections([1]))
+        self.assertTrue(self.validator.check_wall_sections([1, 2, 3]))
+        self.assertTrue(self.validator.check_wall_sections([1]))
 
         with self.assertRaises(BuilderValidationError):
-            self.validator.check_sections([])
+            self.validator.check_wall_sections([])
 
         with self.assertRaises(BuilderValidationError):
-            self.validator.check_sections(1)
+            self.validator.check_wall_sections(1)
 
         with self.assertRaises(BuilderValidationError):
-            self.validator.check_sections(1.0)
+            self.validator.check_wall_sections(1.0)
 
         with self.assertRaises(BuilderValidationError):
             self.validator.check_config_list([[1,] * 2000])
 
     def test_check_profiles(self):
 
-        self.assertTrue(self.validator.check_profiles([1, 2, 3]))
-        self.assertTrue(self.validator.check_profiles([1]))
+        self.assertTrue(self.validator.check_wall_profiles([1, 2, 3]))
+        self.assertTrue(self.validator.check_wall_profiles([1]))
 
         with self.assertRaises(BuilderValidationError):
-            self.validator.check_profiles([])
+            self.validator.check_wall_profiles([])
 
         with self.assertRaises(BuilderValidationError):
-            self.validator.check_profiles(1)
+            self.validator.check_wall_profiles(1)
 
         with self.assertRaises(BuilderValidationError):
-            self.validator.check_profiles(1.0)
+            self.validator.check_wall_profiles(1.0)
 
         with self.assertRaises(BuilderValidationError):
             self.validator.check_config_list([[1,] * 2000])
