@@ -1,7 +1,6 @@
 from unittest import TestCase
 from builder.validator import ConfigValidator
 from builder.errors import *
-from builder.defines import *
 
 
 class TestConfigValidator(TestCase):
