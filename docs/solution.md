@@ -30,9 +30,9 @@ _Time spent: 1 hour_
 
 | Category             | Details                   |
 |----------------------|---------------------------|
-| Programming Language | Python 3.12.3             |
-| Containerization     | Docker 27.1.1             |
-| Web Framework        | Django 5.0.7              |
+| Programming Language | Python 3.12               |
+| Containerization     | Docker 27.1               |
+| Web Framework        | Django 5.1                |
 | Python IDE           | PyCharm Community Edition |
 | Code style           | PEP-8, Google Doc Strings |
 | Linting              | PyCharm built-in linter   |
@@ -187,8 +187,7 @@ log messages to the queue. The `LogListener`process will get the log
 messages from the queue and write them to a file. The file name is fixed in 
 the script (pool_logging.log).
 
-Source:
-- [/scripts/multi_process_logging.py](../scripts/multi_process_logging.py)
+Source: [/scripts/multi_process_logging.py](../scripts/multi_process_logging.py)
 
 ### 4.4. References
 - https://stackoverflow.com/questions/13522177/python-multiprocessing-logging-why-multiprocessing-get-logger
@@ -223,8 +222,9 @@ configurable sleep function. By increasing the number of worker processes, we
 expect the calculations to be done faster. The total amount of ice and cost
 is not affected by the number of workers.
 
-Sources:
-- [/scripts/proof_of_concept.py](../scripts/proof_of_concept.py)
+### 5.3. Prototyping
+
+Sources: [/scripts/proof_of_concept.py](../scripts/proof_of_concept.py)
 
 ## 6. Product Design
 
@@ -253,9 +253,12 @@ _Time spent: 4 hours for implementation_
 
 ### 6.3. Create Design Diagrams
 
-#### Class Diagram
 
+#### Proposal A: Modified Composite Pattern (chosen solution)
 ![C4_L4_class_diagrams.png](../assets/images/C4_L4_composite.png)
+
+#### Proposal B: Builder Pattern (rejected)
+![C4_L4_class_diagrams.png](../assets/images/C4_L4_builder.png)
 
 #### Data Models
 
@@ -288,9 +291,9 @@ _Time spent: 20 hours for implementation and testing_
 * [x] Allow access to the log file
 * [x] Test the views
 
-> This is an implementation of the MVP (minimum viable product) for the REST 
-> API. The API will be used to interact with the wall builder manager.
-> At this stage, we will not use the Django models and a database.
+This is an implementation of the MVP (minimum viable product) for the REST 
+API. The API will be used to interact with the wall builder manager.
+At this stage, we will not use the Django models and a database.
 
 
 ### 7.2. Create a Django project
@@ -350,17 +353,17 @@ urlpatterns = [
 ]
 ```
 
-![hello_world.png](../assets/images/django_route_hello_world.png)
+![hello_world.png](assets/images/django_route_hello_world.png)
 
 ### 7.6. Add the required stub views and route them
 
 Add the required views that will just echo the input data. The views will 
 later connect to the wall builder manager.
 
-![django_route_profiles_overview.png](../assets/images/django_route_profiles_overview.png)
-![profiles_overview_day.png](../assets/images/django_route_profiles_overview_1.png)
-![django_route_profiles_1_overview_1.png](../assets/images/django_route_profiles_1_overview_1.png)
-![/django_route_profiles_1_days_1.png](../assets/images/django_route_profiles_1_days_1)
+![django_route_profiles_overview.png](assets/images/django_route_profiles_overview.png)
+![profiles_overview_day.png](assets/images/django_route_profiles_overview_1.png)
+![django_route_profiles_1_overview_1.png](assets/images/django_route_profiles_1_overview_1.png)
+![/django_route_profiles_1_days_1.png](assets/images/django_route_profiles_1_days_1)
 
 ### 7.7. Connect the views to the wall builder logic
 
@@ -502,7 +505,7 @@ The Django development server should be running, and you should see the Django
 welcome page.
 
 Result:
-- [assets/videos/docker_rest_api_test.mp4](../assets/videos/docker_rest_api_test.mp4)
+- [assets/videos/docker_rest_api_test.mp4](assets/videos/docker_rest_api_test.mp4)
 
 ### 8.5. References
 - https://github.com/docker/awesome-compose/tree/master/django
@@ -599,7 +602,7 @@ mkdocs serve
 ```
 
 Result:
-- [assets/videos/mkdocs_test.mp4](../assets/videos/mkdocs_test.mp4)
+- [assets/videos/mkdocs_test.mp4](assets/videos/mkdocs_test.mp4)
 
 ## 10. Create the CI/CD pipeline
 
@@ -632,12 +635,12 @@ See the file [./.github/workflows/build_docker_image.yml](../.github/workflows/b
 
 Add secrets to the GitHub repository to store the Docker Hub username and password.
 
-![github_docker_secrets.png](../assets/images/github_docker_secrets.png)
+![github_docker_secrets.png](assets/images/github_docker_secrets.png)
 
 After the build the project is available on the Docker Hub. The link to the 
 Docker Hub repository is https://hub.docker.com/repository/docker/braboj/wall_project
 
-![dockerhub_wall_project.png](../assets/images/dockerhub_wall_project.png)
+![dockerhub_wall_project.png](assets/images/dockerhub_wall_project.png)
 
 ## 11. Review
 

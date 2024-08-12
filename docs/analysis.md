@@ -37,7 +37,8 @@ The requirements are divided into three categories based on RFC 2119:
 - `MUST` - Use **Django and Django Rest Framework**
 - `MUST` - Use **Docker** to containerize the solution
 - `MUST` - Use **unittest** to test the solution
-- `SHOULD` - Use Python 3.12+
+- `SHOULD` - Use Python 3.12 for the solution
+- `SHOULD` - Use type hints in docstrings instead of annotations
 - `MAY` - Use SQLite as the database for persistence
 
 ### 3.3. Input

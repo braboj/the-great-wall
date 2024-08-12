@@ -7,7 +7,7 @@ nav:
     - Project:
       - Home: index.md
       - Problem Statement: problem.md
-      - Requirements: analysis.md
+      - Problem Analysis: analysis.md
       - Solution Journal : solution.md
       - Clarifications: clarifications.md
       - Schedule: schedule.md
