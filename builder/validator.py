@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 
 class ConfigValidatorAbc(ABC):
+    """Abstract class for validating builder configuration parameters."""
 
     @abstractmethod
     def check_primary_key(self, value):
@@ -60,100 +61,134 @@ class ConfigValidatorAbc(ABC):
 
 
 class ConfigValidator(object):
+    """Class for validating builder configuration parameters.
+
+    Example:
+        >>> validator = ConfigValidator()
+        >>> validator.check_primary_key(1)
+        True
+        >>> validator.check_foreign_key(1)
+        True
+        >>> validator.check_iterable([1, 2, 3])
+        True
+        >>> validator.check_ice(10)
+        True
+        >>> validator.check_cost(100)
+        True
+        >>> validator.check_height(30)
+        True
+        >>> validator.check_section_count(100)
+        True
+        >>> validator.check_build_rate(1)
+        True
+        >>> validator.check_num_teams(1)
+        True
+        >>> validator.check_cpu_worktime(0.01)
+        True
+        >>> validator.check_sections([1, 2, 3])
+        True
+        >>> validator.check_profiles([1, 2, 3])
+        True
+        >>> validator.check_config_list([[1, 2, 3], [4, 5, 6]])
+        True
+
+    """
 
     @staticmethod
     def check_primary_key(value):
-        """Validates a primary key."""
+        """Checks the primary key."""
 
-        # Check the type of section_id
+        # Check the type of the value
         if not isinstance(value, int):
             raise BuilderValidationError(
-                info='The section_id must be an integer'
+                info='The primary key must be an integer'
             )
 
-        # Check that the section_id is positive
+        # Check that the value is positive
         if value < 0:
             raise BuilderValidationError(
-                info='The section_id must be a positive integer'
+                info='The primary key must be a positive integer'
             )
 
         return True
 
     @staticmethod
     def check_foreign_key(value):
-        """Validates a foreign key."""
+        """Checks a foreign key."""
 
-        # Check the type of profile_id
+        # Check the type of the value
         if not isinstance(value, (int, type(None))):
             raise BuilderValidationError(
-                info='The profile_id must be an integer'
+                info='The foreign key must be an integer'
             )
 
-        # Check that the profile_id is positive
+        # Check that the value is positive or None
         if value is not None and value < 0:
             raise BuilderValidationError(
-                info='The profile_id must be a positive integer'
+                info='The foreign key must be a positive integer'
             )
 
         return True
 
     @staticmethod
     def check_iterable(value):
-        """Validates an iterable."""
+        """Checks if iterable."""
 
-        # Check that the value is an iterable
+        # Check that the value is iterable
         if not hasattr(value, '__iter__'):
             raise BuilderValidationError(
-                info='The value must be an iterable'
+                info='The provided value must be an iterable'
             )
 
         return True
 
     @staticmethod
     def check_ice(value):
-        """Validates the volume_ice_per_foot parameter."""
+        """Checks a volume_ice_per_foot parameter."""
 
-        # Check the type of the start height
+        # Check the type of the value
         if not isinstance(value, int):
             raise BuilderValidationError(
-                info='The start height must be an integer'
+                info='The ice volume must be an integer'
             )
 
-        # Check that the start height is between 0 and the target height
-        if not 0 <= value <= TARGET_HEIGHT:
+        # Check that the value is positive
+        if value <= 0:
             raise BuilderValidationError(
-                info='The start height must be between 0 and 30'
+                info='The ice volume must be a positive integer'
             )
 
         return True
 
     @staticmethod
     def check_cost(value):
-        """Validates the cost_per_volume parameter."""
+        """Checks a cost_per_volume parameter."""
 
-        # Check the type of the start height
+        # Check the type of the value
         if not isinstance(value, int):
             raise BuilderValidationError(
-                info='The start height must be an integer'
+                info='The material cost must be an integer'
             )
 
+        # Check if the value is positive
         if value <= 0:
             raise BuilderValidationError(
-                info=f"Invalid value for cost_per_volume: {value}"
+                info=f"The material cost must be a positive integer: {value}"
             )
 
         return True
 
     @staticmethod
     def check_height(value):
-        """Validates the target_height parameter."""
+        """Checks a target_height parameter."""
 
-        # Check the type of the start height
+        # Check the type of the value
         if not isinstance(value, int):
             raise BuilderValidationError(
                 info='The start height must be an integer'
             )
 
+        # Check that the value is within the allowed range
         if not 0 <= value <= TARGET_HEIGHT:
             raise BuilderValidationError(
                 info=f"Invalid value for target_height: {value}"
@@ -163,7 +198,7 @@ class ConfigValidator(object):
 
     @staticmethod
     def check_section_count(value):
-        """Validates the max_section_count parameter."""
+        """Checks a max_section_count parameter."""
 
         # Check the type of the value
         if not isinstance(value, int):
@@ -171,7 +206,8 @@ class ConfigValidator(object):
                 info='The start height must be an integer'
             )
 
-        if not value < 0 < MAX_SECTION_COUNT:
+        # Check that the value is within the allowed range
+        if not 0 < value < MAX_SECTION_COUNT:
             raise BuilderValidationError(
                 info=f"Invalid value for max_section_count: {value}"
             )
@@ -180,7 +216,7 @@ class ConfigValidator(object):
 
     @staticmethod
     def check_build_rate(value):
-        """Validates the build_rate parameter."""
+        """Checks a build_rate parameter."""
 
         # Check the type of the value
         if not isinstance(value, int):
@@ -198,14 +234,16 @@ class ConfigValidator(object):
 
     @staticmethod
     def check_num_teams(value):
-        """Validates the num_teams parameter."""
+        """Checks a num_teams parameter."""
 
+        # Check the type of the value
         if not isinstance(value, int):
             raise BuilderValidationError(
                 info=f"Invalid num_teams: {value}. Allowed up to {MAX_WORKERS}"
             )
 
-        if not 0 < value < MAX_WORKERS:
+        # Check that the value is within the allowed range
+        if not 0 < value <= MAX_WORKERS:
             raise BuilderValidationError(
                 info=f"Invalid num_teams: {value}. Allowed up to {MAX_WORKERS}"
             )
@@ -214,7 +252,7 @@ class ConfigValidator(object):
 
     @staticmethod
     def check_cpu_worktime(value):
-        """Validates the cpu_worktime parameter."""
+        """Checks a cpu_worktime parameter."""
 
         # Check the type of the value
         if not isinstance(value, float):
@@ -232,9 +270,9 @@ class ConfigValidator(object):
 
     @staticmethod
     def check_sections(value):
-        """Validates the sections parameter."""
+        """Checks a section parameter."""
 
-        # Check the sections is an iterable
+        # Check the sections is iterable
         if not hasattr(value, '__iter__'):
             raise BuilderValidationError(
                 info='The sections must be an iterable'
@@ -251,15 +289,15 @@ class ConfigValidator(object):
 
     @staticmethod
     def check_profiles(value):
-        """Validates the profiles parameter."""
+        """Checks a profile parameter."""
 
-        # Check the profiles is an iterable
+        # Check the profiles is iterable
         if not hasattr(value, '__iter__'):
             raise BuilderValidationError(
                 info='The profiles must be an iterable'
             )
 
-        # Check the total amount of elements
+        # Check the total number of elements
         total = sum(1 for _ in value)
         if not 0 < total < MAX_SECTION_COUNT:
             raise BuilderValidationError(
@@ -270,9 +308,9 @@ class ConfigValidator(object):
 
     @staticmethod
     def check_config_list(value):
-        """Validates the profile list."""
+        """Checks a profile configuration list."""
 
-        # Check the profiles is an iterable
+        # Check the profiles is iterable
         if not hasattr(value, '__iter__'):
             raise BuilderValidationError(
                 info='The profiles must be an iterable'
@@ -291,7 +329,7 @@ class ConfigValidator(object):
                     info='The profiles must contain only integers'
                 )
 
-        # Check the total amount of elements
+        # Check the total number of elements
         total = sum(len(x) for x in value)
         if not 0 < total < MAX_SECTION_COUNT:
             raise BuilderValidationError(

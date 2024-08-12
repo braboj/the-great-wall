@@ -59,6 +59,24 @@ class WallConfigurator(object):
         cpu_worktime (float)            : The CPU work time (in seconds)
         profiles  (list)                : The list of profiles
         validator (ConfigValidatorAbc)  : The configuration validator
+
+    Example:
+        from builder.configurator import WallConfigurator
+
+        # Read the configuration file
+        config = WallConfigurator.from_ini('wall.ini')
+
+        # Change the configuration
+        config.num_teams += 1
+
+        # Write the configuration file
+        config.to_ini()
+
+        # Validate a dictionary object (typically from a web form)
+        config.validate({'num_teams': config.num_teams})
+
+        # Set the configuration using a dictionary (typically from a web form)
+        config.set_params({'num_teams': config.num_teams += 1})
     """
 
     def __init__(self,

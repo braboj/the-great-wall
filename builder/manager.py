@@ -21,6 +21,28 @@ class LogListener(Process):
         queue (Queue)   : A queue to receive log messages.
         logfile (str)   : The name of the log file.
         log (Logger)    : The root logger.
+
+
+    Example:
+        from multiprocessing import Queue
+
+        # Create a queue to receive log messages
+        queue = Queue()
+
+        # Create a log listener process
+        listener = LogListener(queue)
+
+        # Apply the logging configuration (console and log file)
+        listener.configure()
+
+        # Start the log listener process
+        listener.start()
+
+        # Log a message to the queue
+        queue.put('Hello, World!')
+
+        # Stop the log listener process
+        listener.stop()
     """
 
     def __init__(self, queue, logfile='listener.log'):
@@ -117,7 +139,7 @@ class LogListener(Process):
 
 
 class WallBuilderAbc(ABC):
-    """Abstract base class for the wall builder."""
+    """Abstract base class for the wall actors."""
 
     # All instances of the base class must share the same configuration
     config = WallConfigurator()
@@ -176,6 +198,27 @@ class WallSection(WallBuilderAbc):
         start_height (int)  : The starting height of the wall section.
         current_height (int): The current height of the wall section.
         log (Logger)        : The logger for the wall section.
+
+    Example:
+
+        from builder.manager import WallSection
+
+        # Build a wall section
+        section = (
+            WallSection(section_id=0, profile_id=0, start_height=28)
+            .build()
+            .build()
+            .build()
+        )
+
+        # Check if the section is ready
+        print(section.is_ready())
+
+        # Get the ice consumed by the section
+        print(section.get_ice())
+
+        # Get the cost of the section
+        print(section.get_cost())
     """
 
     # All instances must share the same configuration
@@ -324,6 +367,34 @@ class WallProfile(WallBuilderAbc):
         profile_id (int): The profile ID of the wall profile.
         sections (list): A list of wall sections in the profile.
         log (Logger): The logger for the wall profile.
+
+    Example:
+
+        from builder.manager import WallProfile
+
+        # Add a wall section to the profile
+        sections = [
+            WallSection(section_id=1, profile_id=1, start_height=28),
+            WallSection(section_id=2, profile_id=1, start_height=28),
+            WallSection(section_id=3, profile_id=1, start_height=28),
+        ]
+
+        # Build the wall profile
+        profile = (
+            WallProfile(profile_id=1, sections=sections)
+            .build()
+            .build()
+            .build()
+        )
+
+        # Check if the profile is ready
+        print(profile.is_ready())
+
+        # Get the ice consumed by the profile
+        print(profile.get_ice())
+
+        # Get the cost of the profile
+        print(profile.get_cost())
     """
 
     # All instances must share the same configuration
@@ -476,6 +547,33 @@ class WallManager(WallBuilderAbc):
         sections (list): A list of wall sections.
         log (Logger): The logger for the wall builder.
         log_queue (Queue): A queue to receive log messages.
+
+
+    Example:
+
+        from builder.manager import WallManager
+
+        # Define the wall configuration
+        config_list = [
+            [21, 25, 28],
+            [17],
+            [17, 22, 17, 19, 17, ]
+        ]
+
+        # Create a wall builder
+        builder = WallManager()
+
+        # Set the profiles' config list
+        builder.set_config_list(config_list)
+
+        # Build the wall
+        builder.build(num_teams=20, days=30)
+
+        # Get the ice consumed by the wall
+        print(builder.get_ice())
+
+        # Get the cost of the wall
+        print(builder.get_cost())
     """
 
     def __init__(self,
@@ -817,13 +915,10 @@ def main():
     # Create a wall builder
     builder = WallManager.set_config(config)
     builder.build(num_teams=20, days=30)
-    # builder.build(num_teams=20, days=30)
-    # builder.build(num_teams=20, days=1)
 
-    # Profile 1
-    # profile = builder.profiles[0]
-    # print(profile)
+    return builder.get_ice(), builder.get_cost()
 
 
 if __name__ == "__main__":
-    main()
+    result = main()
+    print(result)
