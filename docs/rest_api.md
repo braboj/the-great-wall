@@ -143,7 +143,7 @@ Content           : {"day": 1, "ice": 585}
 #### Description
 
 ```text
-Get the configuration for the wall.
+Get the configuration parameters to construct the wall.
 ```
 
 #### Success Response
@@ -188,7 +188,22 @@ Content           : {"volume_ice_per_foot": 195, "cost_per_volume": 1900, "targe
 #### Description
 
 ```text
-Set the configuration for the wall.
+Set the configuration parameter to construct the wall.
+
+{
+  "volume_ice_per_foot": 195,
+  "cost_per_volume": 1900,
+  "target_height": 30,
+  "max_section_count": 2000,
+  "build_rate": 1,
+  "num_teams": 20,
+  "cpu_worktime": 0.01,
+  "profiles": [
+    [21, 25, 28],
+    [17],
+    [17, 22, 17, 19, 17]
+  ]
+}
 ```
 
 #### Success Response
@@ -221,7 +236,7 @@ Content           : {"status": "success"}
 #### Description
 
 ```text
-Set the logs for the wall.
+Get the logs for the wall construction process.
 ```
 
 #### Success Response
