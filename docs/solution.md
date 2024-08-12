@@ -771,6 +771,88 @@ If possible, include the following extended features:
 - [ ] Class-based views for the endpoints
 - [ ] Browsable API
 
+### 11.5. Research the problem with deadlock on running the unit tests
+
+It seems the current implementation of the logging solution is causing the
+deadlock when running the unit tests. Maybe one of the processes waits 
+indefinitely on one end of the queue if the other end is closed without
+notification?
+
+```python
+import multiprocessing
+import random
+import time
+
+
+class Worker(object):
+
+    def build(self, queue):
+        """Function to be executed in a worker process."""
+
+        while True:
+
+            # Simulate a computation delay
+            time.sleep(0.01)
+
+            # Put the result in the queue
+            queue.put(random.random())
+
+            break
+
+
+class BuilderManager(object):
+
+    @staticmethod
+    def process_results(queue):
+        """Function to process results from the queue."""
+        while not queue.empty():
+            result = queue.get()
+            print(f"Result: {result}")
+
+    def build(self):
+
+        workers = [Worker() for _ in range(4)]
+
+        # Create a manager and a shared queue
+        with multiprocessing.Manager() as manager:
+
+            queue = manager.Queue()
+
+            # Create a pool of worker processes
+            with multiprocessing.Pool(processes=4) as pool:
+
+                # Use pool.starmap to map numbers to the worker function with the shared queue
+                pool.starmap(
+                    func=Worker.build,
+                    iterable=[(worker, queue) for worker in workers]
+                )
+
+            # After all processes have completed, process the results
+            self.process_results(queue)
+
+
+def main():
+
+    managers = [BuilderManager()] * 4
+    for manager in managers:
+        manager.build()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+NOTES:
+
+1. _Due to time constraints, the issue will be dropped for now. The solution 
+will be tested in a future release._
+
+See: 
+- https://docs.python.org/2/library/multiprocessing.html#pipes-and-queues
+- https://stackoverflow.com/questions/43439194/python-multiprocessing-queue-vs-multiprocessing-manager-queue
+- https://cloudcity.io/blog/2019/02/27/things-i-wish-they-told-me-about-multiprocessing-in-python/
+
+
 ## 12. Retrospective
 
 Skills improved during the project:
