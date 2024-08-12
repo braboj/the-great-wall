@@ -33,6 +33,17 @@ def home(request):
             <li>GET /profiles/logs/</li>
             <li>GET /profiles/config/</li>
         </ul>
+        
+        <p>Examples:</p>
+        
+        <ul>
+            <li>https://localhost:8080/profiles/1/overview/1</li>
+            <li>https://localhost:8080/profiles/1/days/1</li>
+        </ul>
+        
+
+    
+    </body>    
     """
 
     return HttpResponse(html)
