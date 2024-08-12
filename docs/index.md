@@ -21,7 +21,7 @@ docker pull braboj/wall_project:latest
 And finally, you can run the following command to start the project:
 
 ```bash
-docker run -p 8000:8000 braboj/wall_project:latest
+docker run -p 8080:8080 braboj/wall_project:latest
 ```
 
 To access the project, open your browser and navigate to:
