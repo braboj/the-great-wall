@@ -40,4 +40,4 @@ For more information on the REST API, please visit:
  - Read the [Wall Project Pages](https://braboj.github.io/the-great-wall/)
  - Visit the [Wall Project Repository](https://github.com/braboj/the-great-wall)
  - To leave feedback, please visit [Discussions](https://github.com/braboj/the-great-wall/discussions)
- - To contribute, please visit [Contributing](CONTRIBUTING.md)
+ - To contribute, please visit [Contributing](https://github.com/braboj/the-great-wall/blob/main/CONTRIBUTING.md)
