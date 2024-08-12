@@ -1,5 +1,5 @@
 # encoding: utf-8
-from multiprocessing import Process, Pool, Queue, current_process
+from multiprocessing import Process, Pool, Queue, current_process, Manager
 from abc import ABC, abstractmethod
 from builder.errors import *
 from builder.configurator import WallConfigurator
@@ -82,29 +82,16 @@ class LogListener(Process):
             mode='w'
         )
 
-        # Apply the message format to the handler
-        file_handler.setFormatter(formatter)
+        # Set the message format for the handlers
+        for handler in [console_handler, file_handler]:
+            handler.setFormatter(formatter)
+            self.log.addHandler(handler)
 
-        # Apply the message format to the handler
-        console_handler.setFormatter(formatter)
-
-        # Add the handlers to the root logger
-        self.log.addHandler(file_handler)
-        self.log.addHandler(console_handler)
+        # Set the log level for the root logger
+        self.log.setLevel(logging.INFO)
 
     def stop(self):
         """Stop the log listener process."""
-
-        # Flush the log handlers
-        for handler in self.log.handlers:
-            handler.flush()
-
-        # Wait until the queue is empty
-        while not self.queue.empty():
-            time.sleep(0.1)
-
-        # Stop the listener process using the sentinel message
-        self.queue.put(None)
 
         # Wait for the listener process to finish
         self.join()
@@ -127,7 +114,7 @@ class LogListener(Process):
                 if record is None:
                     break
 
-                # Get the logger for the record
+                # Get the sending logger (from any process)
                 logger = logging.getLogger(record.name)
 
                 # Handle the log record using the registered log handlers
@@ -135,7 +122,8 @@ class LogListener(Process):
 
             # Handle exceptions gracefully
             except Exception as e:
-                print(f'Exception: {e}')
+                self.log.error(f'Error in log listener: {e}', exc_info=True)
+                break
 
 
 class WallBuilderAbc(ABC):
@@ -480,7 +468,7 @@ class WallProfile(WallBuilderAbc):
         # Check the instance attributes
         self.validator.check_primary_key(self.profile_id)
         self.validator.check_iterable(self.sections)
-        self.validator.check_profiles(self.sections)
+        self.validator.check_wall_profiles(self.sections)
 
         # Check each section in the wall profile
         for section in self.sections:
@@ -546,8 +534,6 @@ class WallManager(WallBuilderAbc):
         profiles (list): A list of wall profiles.
         sections (list): A list of wall sections.
         log (Logger): The logger for the wall builder.
-        log_queue (Queue): A queue to receive log messages.
-
 
     Example:
 
@@ -591,21 +577,8 @@ class WallManager(WallBuilderAbc):
         self.log = logging.getLogger()
         self.log.addHandler(logging.NullHandler())
 
-        # Create the log queue to receive log messages
-        self.log_queue = Queue()
-        self.prepare(self.log_queue)
-
         # Set the validator
         self.validator = validator
-
-    def report(self, start_time, end_time):
-        """Log the results of the wall construction."""
-        self.log.info('-' * 80)
-        self.log.info(f'TOTAL ICE : {self.get_ice()}')
-        self.log.info(f'TOTAL COST: {self.get_cost()}')
-        self.log.info('-' * 80)
-        self.log.info(f"Calculation time: {end_time - start_time:.2f} seconds")
-        self.log.info('-' * 80)
 
     def parse_profile_list(self):
         """Parse the configuration list to create wall sections.
@@ -727,7 +700,7 @@ class WallManager(WallBuilderAbc):
 
         with open(self.log_filepath, 'r') as file:
             for line in file:
-                logs.append(line)
+                logs.append(line.strip())
 
         # Convert the logs to a dictionary
         logs = {
@@ -796,9 +769,6 @@ class WallManager(WallBuilderAbc):
             queue (Queue): A queue to receive log messages.
         """
 
-        # Set the name of the current process
-        current_process().name = 'Manager'
-
         # Get the root logger for the wall builder
         log = logging.getLogger()
 
@@ -835,59 +805,60 @@ class WallManager(WallBuilderAbc):
             WallManager: The updated wall builder instance.
         """
 
-        # Start the log listener process
-        log_listener = LogListener(
-            queue=self.log_queue,
-            logfile=self.log_filepath
-        )
-        log_listener.start()
+        # Set the name of the current process
+        current_process().name = 'Manager'
 
-        try:
+        with Manager() as manager:
 
-            # Parse the profile list
-            self.parse_profile_list()
+            # Create a queue to receive log messages
+            queue = manager.Queue()
+
+            # Prepare the root logger for this process
+            self.prepare(queue)
+
+            # Start the log consumer process
+            log_listener = LogListener(
+                queue=queue,
+                logfile=self.log_filepath
+            )
+            log_listener.start()
 
             # Create a pool of workers
-            pool = Pool(
-                processes=num_teams,
-                initializer=WallSection.prepare,
-                initargs=(self.log_queue,),
-            )
+            with Pool(num_teams, WallSection.prepare, (queue,)) as pool:
 
-            # Save the start timestamp
-            start_time = time.time()
+                # Parse the profile list anew to get any changes
+                self.parse_profile_list()
 
-            # Build the wall
-            for day in range(days):
+                # Save the start timestamp
+                start_time = time.time()
 
-                # Check if all sections are ready
-                if self.is_ready():
-                    break
+                # Build the wall by delegating work to the teams
+                for day in range(days):
 
-                # Map a section from a profile to a worker
-                self.sections = pool.starmap(
-                    func=WallSection.build,
-                    iterable=[(section, days) for section in self.sections]
-                )
+                    # Check if all sections are ready
+                    if self.is_ready():
+                        break
 
-            # No more work to be done
-            pool.close()
-            pool.join()
+                    # Map a section from a profile to a worker team
+                    self.sections = pool.starmap(
+                        func=WallSection.build,
+                        iterable=[(section, days) for section in self.sections]
+                    )
 
-            # Save the end timestamp
-            end_time = time.time()
+                # Save the end timestamp
+                end_time = time.time()
 
-            # Log the results
-            self.report(start_time=start_time, end_time=end_time)
+                # Log the results
+                self.log.info(f'TOTAL TIME : {end_time - start_time:.2f} seconds')
 
-            # Update the profiles
-            self.update_profiles()
+                # Update the profiles
+                self.update_profiles()
 
-        except Exception as e:
-            raise BuilderError(f"An error occurred: {e}")
+                # Send a stop signal to the log listener
+                queue.put(None)
 
-        finally:
-            log_listener.stop()
+                # Stop the log listener process
+                log_listener.stop()
 
         # Return the updated wall builder
         return self
