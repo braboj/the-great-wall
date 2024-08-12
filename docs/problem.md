@@ -68,7 +68,7 @@ section if available. Each process/thread should write into a log file the
 section that it has completed on the concrete day or “relieved” if there are 
 no jobs.
 
-### Example
+## Examples
 
 **Input:**
 
