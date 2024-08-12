@@ -37,8 +37,8 @@ def home(request):
         <p>Examples:</p>
         
         <ul>
-            <li>https://localhost:8080/profiles/1/overview/1</li>
-            <li>https://localhost:8080/profiles/1/days/1</li>
+            <li>http://localhost:8080/profiles/1/overview/1</li>
+            <li>http://localhost:8080/profiles/1/days/1</li>
         </ul>
         
 
