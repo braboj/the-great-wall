@@ -394,3 +394,49 @@ class TestWallManager(TestCase):
         with self.assertRaises(BuilderValidationError):
             manager.set_config_list(config_list)
             manager.validate()
+
+    def test_calculate_ice(self):
+
+        config_list = [
+            [21, 25, 28],
+            [17],
+            [17, 22, 17, 19, 17, ]
+        ]
+
+        total_ice = sum([
+            sum([(30 - x) * 195 for x in config_list[0]]),
+            sum([(30 - x) * 195 for x in config_list[1]]),
+            sum([(30 - x) * 195 for x in config_list[2]]),
+        ])
+
+        total_cost = total_ice * COST_PER_VOLUME
+
+        # Create the manager
+        manager = WallManager()
+
+        # Set the configuration list
+        manager.set_config_list(config_list)
+
+        # Build the wall
+        manager.build(days=30)
+
+        # Check the total ice
+        self.assertEqual(manager.get_ice(), total_ice)
+
+        # Check the total cost
+        self.assertEqual(manager.get_cost(), total_cost)
+
+        for profile in manager.profiles:
+
+            start_heights = config_list[manager.profiles.index(profile)]
+
+            # Check the total ice for profile 1
+            expected_ice = sum([(30 - x) * 195 for x in start_heights])
+            self.assertEqual(profile.get_ice(), expected_ice)
+
+            # Check the total cost for profile 1
+            expected_cost = expected_ice * COST_PER_VOLUME
+            self.assertEqual(profile.get_cost(), expected_cost)
+
+
+
