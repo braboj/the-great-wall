@@ -40,7 +40,7 @@ prolem statement:
 
 - [http://localhost:8080/profiles/overview](http://localhost:8080/profiles/overview)
 - [http://localhost:8080/profiles/overview/1](http://localhost:8080/profiles/overview/1)
-- [http://localhost:8080/profiles/1/overview/1)](http://localhost:8080/profiles/1/overview/1)
+- [http://localhost:8080/profiles/1/overview/1](http://localhost:8080/profiles/1/overview/1)
 - [http://localhost:8080/profiles/1/days/1](http://localhost:8080/profiles/1/days/1)
 
 Additionally, you can use the following links to check the logs and the 
