@@ -832,18 +832,11 @@ class WallManager(WallBuilderAbc):
                 # Save the start timestamp
                 start_time = time.time()
 
-                # Build the wall by delegating work to the teams
-                for day in range(days):
-
-                    # Check if all sections are ready
-                    if self.is_ready():
-                        break
-
-                    # Map a section from a profile to a worker team
-                    self.sections = pool.starmap(
-                        func=WallSection.build,
-                        iterable=[(section, days) for section in self.sections]
-                    )
+                # Map a section from a profile to a worker team
+                self.sections = pool.starmap(
+                    func=WallSection.build,
+                    iterable=[(section, days) for section in self.sections]
+                )
 
                 # Save the end timestamp
                 end_time = time.time()
