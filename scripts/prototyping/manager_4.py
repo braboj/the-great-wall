@@ -10,10 +10,6 @@ import logging
 import time
 
 
-# TODO: Move the prepare method to the WallBuilderAbc class after the problem
-#  with the logging is fixed.
-
-
 class LogListener(Process):
     """Process that listens for log messages on a queue.
 
