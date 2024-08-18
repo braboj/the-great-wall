@@ -10,10 +10,6 @@ import logging
 import time
 
 
-# TODO: Move the prepare method to the WallBuilderAbc class after the problem
-#  with the logging is fixed.
-
-
 class LogListener(Process):
     """Process that listens for log messages on a queue.
 
@@ -149,6 +145,30 @@ class WallBuilderAbc(ABC):
         cls.config = config
         return cls()
 
+    @staticmethod
+    def prepare(queue):
+        """Prepares the process before the actual work.
+
+        The prepare method might include setting up the logger, configuring the
+        process, and other initialization tasks. The method is called before
+        the actual work is done by the process (see the Pool constructor).
+
+        Args:
+            queue (Queue): A queue to receive log messages.
+        """
+
+        # Get the root logger for the wall builder
+        log = logging.getLogger()
+
+        # Set the log level for the root logger
+        log.setLevel(logging.INFO)
+
+        # Create a QueueHandler to send log messages to a queue
+        handler = logging.handlers.QueueHandler(queue)
+
+        # Add the QueueHandler to the root logger
+        log.addHandler(handler)
+
     @abstractmethod
     def is_ready(self, *args, **kwargs):
         """Check if the wall is ready to be constructed."""
@@ -162,11 +182,6 @@ class WallBuilderAbc(ABC):
     @abstractmethod
     def get_cost(self, *args, **kwargs):
         """Get the total cost of the wall."""
-        raise NotImplementedError
-
-    @abstractmethod
-    def prepare(self, *args, **kwargs):
-        """Prepare the wall builder for construction."""
         raise NotImplementedError
 
     @abstractmethod
@@ -286,30 +301,6 @@ class WallSection(WallBuilderAbc):
         self.validator.check_height(self.start_height)
         self.validator.check_primary_key(self.section_id)
         self.validator.check_foreign_key(self.profile_id)
-
-    @staticmethod
-    def prepare(queue):
-        """Configures the wall section to log to a queue.
-
-        This method configures the wall section to log messages to a queue
-        instead of the console. It creates a QueueHandler using a shared
-        queue and adds it to the root logger for this process.
-
-        Args:
-            queue (Queue): A queue to receive log messages
-        """
-
-        # Get the root logger
-        log = logging.getLogger()
-
-        # Set the log level for the root logger
-        log.setLevel(logging.INFO)
-
-        # Create a QueueHandler to send log messages to a queue
-        handler = logging.handlers.QueueHandler(queue)
-
-        # Add the QueueHandler to the root logger
-        log.addHandler(handler)
 
     def build(self, days=1):
         """Increment the section height with the build rate (foot/day).
@@ -481,30 +472,6 @@ class WallProfile(WallBuilderAbc):
             section.validate()
 
         return self
-
-    @staticmethod
-    def prepare(queue):
-        """Configures the wall section to log to a queue.
-
-        This method configures the wall profile to log messages to a queue
-        instead of the console. It creates a QueueHandler using a shared queue
-        and adds it to the root logger for this process.
-
-        Args:
-            queue (Queue): A queue to receive log messages.
-        """
-
-        # Get the root logger
-        log = logging.getLogger()
-
-        # Set the log level for the root logger
-        log.setLevel(logging.INFO)
-
-        # Create a QueueHandler to send log messages to a queue
-        handler = logging.handlers.QueueHandler(queue)
-
-        # Add the QueueHandler to the root logger
-        log.addHandler(handler)
 
     def build(self, days=1):
         """Builds all sections in the wall profile by the build rate.
@@ -765,30 +732,6 @@ class WallManager(WallBuilderAbc):
         self.validator.check_config_list(self.config.profiles)
 
         return self
-
-    @staticmethod
-    def prepare(queue):
-        """Configures the wall manager to log to a queue.
-
-        This method configures the wall manager to log messages to a queue
-        instead of the console. It creates a QueueHandler and adds it to the
-        root logger.
-
-        Args:
-            queue (Queue): A queue to receive log messages.
-        """
-
-        # Get the root logger for the wall builder
-        log = logging.getLogger()
-
-        # Set the log level for the root logger
-        log.setLevel(logging.INFO)
-
-        # Create a QueueHandler to send log messages to a queue
-        handler = logging.handlers.QueueHandler(queue)
-
-        # Add the QueueHandler to the root logger
-        log.addHandler(handler)
 
     def build(self, days=1, num_teams=1):
         """Build the wall using a pool of workers.
