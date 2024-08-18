@@ -1,6 +1,6 @@
 # encoding: utf-8
-from multiprocessing import Process, Pool, Queue, current_process, Manager
 from abc import ABC, abstractmethod
+from multiprocessing import Process, Pool, Queue, Manager, current_process
 from builder.errors import *
 from builder.configurator import WallConfigurator
 from builder.validator import ConfigValidator
