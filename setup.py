@@ -7,5 +7,5 @@ SHORT_DESCRIPTION = """
 An application to build the wall using REST API.
 """.strip()
 
-VERSION = '0.0.5.0'
+VERSION = '0.0.6.0'
 URL = 'https://github.com/braboj/the-great-wall'
