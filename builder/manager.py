@@ -93,6 +93,9 @@ class LogListener(Process):
     def stop(self):
         """Stop the log listener process."""
 
+        # Send a stop signal to the log listener
+        self.queue.put(None)
+
         # Wait for the listener process to finish
         self.join()
 
@@ -843,9 +846,6 @@ class WallManager(WallBuilderAbc):
 
             # Update the profiles
             self.update_profiles()
-
-            # Send a stop signal to the log listener
-            queue.put(None)
 
             # Stop the log listener process
             log_listener.stop()
