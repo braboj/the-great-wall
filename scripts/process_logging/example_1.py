@@ -1,3 +1,5 @@
+# Taken from https://docs.python.org/3/library/logging.html#logging-to-a-single-file-from-multiple-processes
+
 import logging
 import logging.handlers
 import multiprocessing
@@ -8,7 +10,7 @@ import time
 def listener_configurer():
     """Configure logging for the listener process."""
     root = logging.getLogger()
-    h = logging.handlers.RotatingFileHandler('mptest.log', 'a', 300, 10)
+    h = logging.handlers.RotatingFileHandler('../multiprocessing/mptest.log', 'a', 300, 10)
     f = logging.Formatter(
         '%(asctime)s %(processName)-10s %(name)s %(levelname)-8s %(message)s')
     h.setFormatter(f)
@@ -17,6 +19,9 @@ def listener_configurer():
 
 def listener_process(queue, configurer):
     """Listen for log records on the queue and handle them."""
+
+    print(f"Listener: Queue-ID={queue._opid}")
+
     configurer()
     while True:
         try:
@@ -45,6 +50,7 @@ MESSAGES = [
 
 def worker_configurer(queue):
     """Configure logging for worker processes."""
+    print(f"Worker Configurer: Queue-ID={queue._opid}")
     h = logging.handlers.QueueHandler(queue)
     root = logging.getLogger()
     root.addHandler(h)
@@ -54,18 +60,19 @@ def worker_configurer(queue):
 def worker_task(number):
     """Function executed by each worker in the pool."""
     name = multiprocessing.current_process().name
-    print(f'Worker started: {number}')
+    # print(f'Worker started: {number}')
     for _ in range(10):
         time.sleep(random())
         logger = logging.getLogger(choice(LOGGERS))
         level = choice(LEVELS)
         message = choice(MESSAGES)
         logger.log(level, message)
-    print(f'Worker finished: {name}')
+    # print(f'Worker finished: {name}')
 
 
 def main_thread_configurer(queue):
     """Configure logging for the main thread."""
+    print(f"Main Configurer: Queue-ID={queue._opid}")
     h = logging.handlers.QueueHandler(queue)
     root = logging.getLogger()
     root.addHandler(h)
@@ -74,6 +81,7 @@ def main_thread_configurer(queue):
 
 def main():
     queue = multiprocessing.Queue(-1)
+    print(f"Main : Queue-ID={queue._opid}")
 
     # Configure main thread logging
     main_thread_configurer(queue)

@@ -3,11 +3,14 @@ https://github.com/python/cpython/issues/66587
 https://github.com/python/cpython/issues/53451
 """
 
-import multiprocessing, logging
+import concurrent.futures as futures
+import multiprocessing
+import logging
+import sys
+
 logger = multiprocessing.log_to_stderr()
 logger.setLevel(logging.DEBUG)
 
-import sys
 
 def test(value):
     if value:
@@ -15,6 +18,11 @@ def test(value):
 
 
 if __name__ == '__main__':
-    pool = multiprocessing.Pool(1)
-    cases = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
-    pool.map(test, cases)
+
+    # with multiprocessing.Pool(1) as pool:
+    #     cases = [0, 1, 0]
+    #     pool.map(test, cases)
+
+    with futures.ProcessPoolExecutor(1) as executor:
+        cases = [0, 1, 0]
+        executor.map(test, cases)
