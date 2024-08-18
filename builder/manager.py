@@ -299,14 +299,14 @@ class WallSection(WallBuilderAbc):
         # Get the root logger
         log = logging.getLogger()
 
+        # Set the log level for the root logger
+        log.setLevel(logging.INFO)
+
         # Create a QueueHandler to send log messages to a queue
         handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
         log.addHandler(handler)
-
-        # Set the log level for the root logger
-        log.setLevel(logging.INFO)
 
     def build(self, days=1):
         """Increment the section height with the build rate (foot/day).
@@ -343,6 +343,9 @@ class WallSection(WallBuilderAbc):
 
             # Simulate CPU work
             time.sleep(self.config.cpu_worktime)
+
+        # Cleanup the log handlers
+        self.log.handlers.clear()
 
         # Return the updated wall section
         return self
@@ -491,14 +494,14 @@ class WallProfile(WallBuilderAbc):
         # Get the root logger
         log = logging.getLogger()
 
+        # Set the log level for the root logger
+        log.setLevel(logging.INFO)
+
         # Create a QueueHandler to send log messages to a queue
         handler = logging.handlers.QueueHandler(queue)
 
         # Add the QueueHandler to the root logger
         log.addHandler(handler)
-
-        # Set the log level for the root logger
-        log.setLevel(logging.INFO)
 
     def build(self, days=1):
         """Builds all sections in the wall profile by the build rate.
@@ -522,6 +525,9 @@ class WallProfile(WallBuilderAbc):
             for section in self.sections:
                 if not section.is_ready():
                     section.build()
+
+        # Cleanup the log handlers
+        self.log.handlers.clear()
 
         # Return the updated wall profile
         return self
@@ -772,24 +778,14 @@ class WallManager(WallBuilderAbc):
         # Get the root logger for the wall builder
         log = logging.getLogger()
 
-        """
-        The following code is commented out. It is working as expected, but
-        when the unit tests are started, something stays in the background
-        and doesn't allow the tests to finish. The tests are hanging.
-        
-        Investigate the issue and fix it. It is a nice problem to practice
-        debugging techniques on multiprocessing and logging.
-        """
-        # ----------------------------------------------------------------------
-        # Create a QueueHandler to send log messages to a queue
-        # handler = logging.handlers.QueueHandler(queue)
-
-        # Add the QueueHandler to the root logger
-        # log.addHandler(handler)
-        # ----------------------------------------------------------------------
-
         # Set the log level for the root logger
         log.setLevel(logging.INFO)
+
+        # Create a QueueHandler to send log messages to a queue
+        handler = logging.handlers.QueueHandler(queue)
+
+        # Add the QueueHandler to the root logger
+        log.addHandler(handler)
 
     def build(self, days=1, num_teams=1):
         """Build the wall using a pool of workers.
@@ -808,12 +804,13 @@ class WallManager(WallBuilderAbc):
         # Set the name of the current process
         current_process().name = 'Manager'
 
+        # Create a manager to share the log queue
         with Manager() as manager:
 
-            # Create a queue to receive log messages
+            # Create a shared log queue
             queue = manager.Queue()
 
-            # Prepare the root logger for this process
+            # Prepare the process (logger configuration, etc.)
             self.prepare(queue)
 
             # Start the log consumer process
@@ -823,11 +820,11 @@ class WallManager(WallBuilderAbc):
             )
             log_listener.start()
 
+            # Parse the profile list anew to get any changes
+            self.parse_profile_list()
+
             # Create a pool of workers
             with Pool(num_teams, WallSection.prepare, (queue,)) as pool:
-
-                # Parse the profile list anew to get any changes
-                self.parse_profile_list()
 
                 # Save the start timestamp
                 start_time = time.time()
@@ -841,17 +838,20 @@ class WallManager(WallBuilderAbc):
                 # Save the end timestamp
                 end_time = time.time()
 
-                # Log the results
-                self.log.info(f'TOTAL TIME : {end_time - start_time:.2f} seconds')
+            # Log the results
+            self.log.debug(f'TOTAL TIME : {end_time - start_time:.2f} seconds')
 
-                # Update the profiles
-                self.update_profiles()
+            # Update the profiles
+            self.update_profiles()
 
-                # Send a stop signal to the log listener
-                queue.put(None)
+            # Send a stop signal to the log listener
+            queue.put(None)
 
-                # Stop the log listener process
-                log_listener.stop()
+            # Stop the log listener process
+            log_listener.stop()
+
+            # Cleanup the log handlers
+            self.log.handlers.clear()
 
         # Return the updated wall builder
         return self
@@ -884,5 +884,8 @@ def main():
 
 
 if __name__ == "__main__":
-    result = main()
-    print(result)
+
+    for i in range(10):
+        print(f"Run {i + 1}")
+        result = main()
+        print(result)
