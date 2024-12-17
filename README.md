@@ -1,9 +1,6 @@
 # Introduction
 
-This project is a REST API to simulate and track the construction of a fictional 
-defensive wall using `Django` and `multiprocessing`. This wall consists of
-multiple sections, and the system should accurately track the progress, 
-material usage, and costs associated with the construction.
+This project is a REST API designed to simulate and monitor the construction of a fictional defensive wall. Built using Django and multiprocessing, the system manages multiple wall sections, tracking construction progress, material usage, and associated costs in real-time. The application is packaged as a Docker image, enabling seamless deployment across any platform that supports Docker.
 
 ## Installation
 
